@@ -35,10 +35,18 @@ btree* btree_malloc() {
         bt->children[i] = NULL;
     }
 
+    bt->children[CHILDREN - 1] = NULL;
+
     return bt;
 }
 
 void btree_free(btree* bt) {
+    for (int i = 0; i < CHILDREN; i += 1) {
+        if (!is_child_at_empty(bt, i)) {
+            btree_free(bt->children[i]);
+        }
+    }
+
     free(bt);
 }
 
@@ -52,7 +60,9 @@ long btree_size(btree* bt) {
         }
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
-            size += btree_size(bt->children[i]);
+            if (!is_child_at_empty(bt, i)) {
+                size += btree_size(bt->children[i]);
+            }
         }
     }
 
@@ -92,22 +102,71 @@ void btree_print_helper(btree* bt, int depth) {
             printf("%s%ld: %ld\n", spacer, bt->keys[i], bt->data[i]);
         }
     } else {
-        printf("Implement dump for nodes");
-        abort();
+        for (int i = 0; i < CHILDREN; i += 1) {
+            if (i > 0) {
+                printf("%s%ld - separator\n", spacer, bt->keys[i - 1]);
+            }
+
+            if (!is_child_at_empty(bt, i)) {
+                btree_print_helper(bt->children[i], depth + 1);
+            }
+        }
     }
 }
 
 void btree_print(btree* bt) {
-    printf("DUMP BTREE\n");
+    printf("\nDUMP BTREE\n");
     printf("==========\n");
 
     btree_print_helper(bt, 0);
+    printf("\n");
 }
 
 long btree_get(btree* bt, long key) {
     printf("btree_get(%ld)\n", key);
 
     return -1;
+}
+
+btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
+    int split_index = NODES / 2 + 1;
+
+    long split_key = bt->keys[split_index];
+
+    btree* right_leaf = btree_malloc();
+
+    for (int i = split_index; i < NODES; i += 1) {
+        right_leaf->keys[i - split_index] = bt->keys[i];
+        right_leaf->data[i - split_index] = bt->data[i];
+
+        bt->keys[i] = -1;
+        bt->data[i] = -1;
+    }
+
+    right_leaf->keys[split_index - 1] = rightmost_key;
+    right_leaf->data[split_index - 1] = rightmost_val;
+
+    btree* parent = btree_malloc();
+    parent->keys[0] = split_key;
+    parent->children[0] = bt;
+    parent->children[1] = right_leaf;
+
+    return parent;
+}
+
+btree* btree_split_node(btree* bt, long rightmost_key, long rightmost_val) {
+    printf("Need to implement node splitting\n");
+    abort();
+
+    return bt;
+}
+
+btree* btree_split(btree* bt, long rightmost_key, long rightmost_val) {
+    if (is_leaf(bt)) {
+        return btree_split_leaf(bt, rightmost_key, rightmost_val);
+    }
+
+    return btree_split_node(bt, rightmost_key, rightmost_val);
 }
 
 btree* btree_insert_at_leaf(btree* bt, long key, long val) {
@@ -132,8 +191,8 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
 
     long inserting_key = key;
     long inserting_val = val;
-    for (int i = insert_at; i < NODES; i += 1) {
-        if (bt->data[i] == -1) {
+    for (int i = insert_at; i != -1 && i < NODES; i += 1) {
+        if (is_data_at_empty(bt, i)) {
             bt->keys[i] = inserting_key;
             bt->data[i] = inserting_val;
 
@@ -151,10 +210,10 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
         inserting_val = tmp_val;
     }
 
-    if (inserting_key != key) {
-        // there was overflow, need to split
-        printf("Need to implement splitting\n");
-        abort();
+    // if we end up with a different key than the initial key or we didn't find a good spot to
+    // insert at, split the node and insert the key we have to the right
+    if (insert_at == -1 || inserting_key != key) {
+        return btree_split(bt, inserting_key, inserting_val);
     }
 
     return NULL;
