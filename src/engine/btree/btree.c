@@ -22,6 +22,10 @@ bool is_data_at_empty(btree* bt, int index) {
     return bt->data[index] == -1;
 }
 
+bool is_key_at_empty(btree* bt, int index) {
+    return bt->keys[index] == -1;
+}
+
 bool is_child_at_empty(btree* bt, int index) {
     return bt->children[index] == NULL;
 }
@@ -169,6 +173,8 @@ btree* btree_split(btree* bt, long rightmost_key, long rightmost_val) {
     return btree_split_node(bt, rightmost_key, rightmost_val);
 }
 
+btree* btree_insert_helper(btree* bt, long key, long val);
+
 btree* btree_insert_at_leaf(btree* bt, long key, long val) {
     int insert_at = -1;
     for (int i = 0; i < NODES; i += 1) {
@@ -179,7 +185,6 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
         } else if (is_data_at_empty(bt, i)) { // found an empty spot, insert here
             bt->keys[i] = key;
             bt->data[i] = val;
-            
 
             return NULL;
         } else if (key < bt->keys[i]) { // key should be inserted right before this
@@ -216,22 +221,48 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
         return btree_split(bt, inserting_key, inserting_val);
     }
 
+    printf("btree_insert_at_leaf failed!\n");
+    abort();
+
+    return NULL;
+}
+
+btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
+    if (maybe_split == NULL) {
+        return parent;
+    }
+
+    printf("Need to propagate splits\n");
+    abort();
+
     return NULL;
 }
 
 btree* btree_insert_at_node(btree* bt, long key, long val) {
-    return bt;
+    for (int i = 0; i < NODES; i += 1) {
+        if (is_key_at_empty(bt, i)) { // no more keys in this node, traverse down rightmost child
+            return btree_node_split_handler(bt, btree_insert_helper(bt->children[i], key, val));
+        } else if (key < bt->keys[i]) {
+            return btree_node_split_handler(bt, btree_insert_helper(bt->children[i], key, val));
+        }
+    }
+
+    return btree_node_split_handler(bt, btree_insert_helper(bt->children[CHILDREN - 1], key, val));
+}
+
+btree* btree_insert_helper(btree* bt, long key, long val) {
+    btree* tmp;
+    if (is_leaf(bt)) {
+        return btree_insert_at_leaf(bt, key, val);
+    }
+
+    return btree_insert_at_node(bt, key, val);
 }
 
 btree* btree_insert(btree* bt, long key, long val) {
     printf("btree_insert(%ld, %ld)\n", key, val);
 
-    btree* tmp;
-    if (is_leaf(bt)) {
-        tmp = btree_insert_at_leaf(bt, key, val);
-    } else {
-        tmp = btree_insert_at_node(bt, key, val);
-    }
+    btree* tmp = btree_insert_helper(bt, key, val);
 
     return tmp == NULL ? bt : tmp;
 }
