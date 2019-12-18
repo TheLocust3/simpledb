@@ -9,7 +9,7 @@ db: $(OBJS)
 	gcc -c -o $@ $<
 
 clean:
-	rm -f db **/*.o
+	rm -f db $(OBJS)
 
 run: db
 	./db
