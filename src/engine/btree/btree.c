@@ -223,8 +223,6 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
 
     printf("btree_insert_at_leaf failed!\n");
     abort();
-
-    return NULL;
 }
 
 btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
@@ -232,10 +230,59 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         return parent;
     }
 
-    printf("Need to propagate splits\n");
-    abort();
+    // TODO: below code copied (a mildly modified) from btree_insert_at_leaf
 
-    return NULL;
+    int insert_at = -1;
+    long inserting_key = maybe_split->keys[0];
+    btree* inserting_left_child = maybe_split->children[0];
+    btree* inserting_right_child = maybe_split->children[1];
+
+    for (int i = 0; i < NODES; i += 1) {
+        if (is_key_at_empty(parent, i)) { // found an empty spot, insert here
+            parent->keys[i] = inserting_key;
+            parent->children[i] = inserting_left_child;
+            parent->children[i + 1] = inserting_right_child;
+
+            return NULL;
+        } else if (inserting_key < parent->keys[i]) { // key should be inserted right before this
+            insert_at = i;
+
+            break;
+        }
+    }
+
+    for (int i = insert_at; i < NODES; i += 1) {
+        if (is_key_at_empty(parent, i)) {
+            parent->keys[i] = inserting_key;
+            parent->children[i] = inserting_left_child;
+            parent->children[i + 1] = inserting_right_child;
+
+            return NULL;
+        }
+        
+        long tmp_key = parent->keys[i];
+        btree* tmp_right_child = parent->children[i + 1];
+
+        // insert key/val at spot, loop again to shift values to the left
+        parent->keys[i] = inserting_key;
+        parent->children[i] = inserting_left_child;
+        parent->children[i + 1] = inserting_right_child;
+
+        inserting_key = tmp_key;
+        inserting_left_child = inserting_right_child;
+        inserting_right_child = tmp_right_child;
+    }
+
+    free(maybe_split); // free the parent node that we didn't use
+
+    // we couldn't find a good spot to insert at so let's split the parent and propagate the split
+    if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
+        printf("Need to implement node splitting");
+        abort();
+    }
+
+    printf("btree_node_split_handler failed!\n");
+    abort();
 }
 
 btree* btree_insert_at_node(btree* bt, long key, long val) {

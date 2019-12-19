@@ -14,16 +14,22 @@ int main(int argc, char* argv[]) {
     test = btree_insert(test, 1, 12);
     test = btree_insert(test, 1, 11);
 
-    test = btree_insert(test, 5, 20);
+    test = btree_insert(test, 15, 20);
     test = btree_insert(test, 13, 19);
     test = btree_insert(test, 2, 19);
     test = btree_insert(test, 0, 19);
     test = btree_insert(test, 12, 19);
 
-    printf("\nSize: %ld\n", btree_size(test));
-    btree_print(test);
-
+    test = btree_insert(test, 5, 420);
     test = btree_insert(test, 69, 420);
+    test = btree_insert(test, 70, 420);
+    test = btree_insert(test, 71, 420);
+    test = btree_insert(test, 72, 420);
+    test = btree_insert(test, 73, 420);
+    test = btree_insert(test, 74, 420);
+    test = btree_insert(test, 75, 420);
+    test = btree_insert(test, 76, 420);
+    test = btree_insert(test, 77, 420);
 
     printf("\nSize: %ld\n", btree_size(test));
     btree_print(test);
