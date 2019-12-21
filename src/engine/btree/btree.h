@@ -22,4 +22,3 @@ btree* btree_insert(btree* bt, long key, long val);
 btree* btree_delete(btree* bt, long key);
 
 #endif
-

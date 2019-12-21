@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "btree.h"
+#include "../../log.h"
 
 bool is_leaf(btree* bt) {
     for (int i = 0; i < CHILDREN; i += 1) {
@@ -169,7 +170,7 @@ long btree_get_helper(btree* bt, long key) {
 }
 
 long btree_get(btree* bt, long key) {
-    printf("btree_get(%ld)\n", key);
+    log_debug("btree_get(%ld)\n", key);
 
     return btree_get_helper(bt, key);
 }
@@ -272,7 +273,7 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
         return btree_split_leaf(bt, inserting_key, inserting_val);
     }
 
-    printf("btree_insert_at_leaf failed!\n");
+    log_error("btree_insert_at_leaf failed!\n");
     abort();
 }
 
@@ -331,7 +332,7 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         return btree_split_node(parent, inserting_key, inserting_right_child);
     }
 
-    printf("btree_node_split_handler failed!\n");
+    log_error("btree_node_split_handler failed!\n");
     abort();
 }
 
@@ -357,7 +358,7 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
 }
 
 btree* btree_insert(btree* bt, long key, long val) {
-    printf("btree_insert(%ld, %ld)\n", key, val);
+    log_debug("btree_insert(%ld, %ld)\n", key, val);
 
     btree* tmp = btree_insert_helper(bt, key, val);
 
@@ -365,7 +366,7 @@ btree* btree_insert(btree* bt, long key, long val) {
 }
 
 btree* btree_delete(btree* bt, long key) {
-    printf("btree_delete(%ld)\n", key);
+    log_debug("btree_delete(%ld)\n", key);
 
     return bt;
 }

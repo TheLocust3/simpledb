@@ -6,9 +6,7 @@
 
 #include "../src/engine/btree/btree.h"
 
-#define INSERTS 30
-#define KEY_MAX 1000
-#define DATA_MAX 1000
+#define REPEAT 3
 
 bool includes(int data, int* arr, int size) {
     for (int i = 0; i < size; i += 1) {
@@ -20,25 +18,25 @@ bool includes(int data, int* arr, int size) {
     return false;
 }
 
-int test_btree_random() {
+int test_btree_random_no_updates(int inserts) {
     btree* bt = btree_malloc();
 
-    int* keys = malloc(INSERTS * sizeof(int));
-    int* data = malloc(INSERTS * sizeof(int));
-    for (int i = 0; i < INSERTS; i += 1) {
+    int* keys = malloc(inserts * sizeof(int));
+    int* data = malloc(inserts * sizeof(int));
+    for (int i = 0; i < inserts; i += 1) {
         int val;
         do {
-            val = rand() % KEY_MAX;
-        } while (includes(val, keys, INSERTS));
+            val = rand();
+        } while (includes(val, keys, inserts));
         keys[i] = val;
 
-        data[i] = rand() % DATA_MAX;
+        data[i] = rand();
         
 
         bt = btree_insert(bt, keys[i], data[i]);
     }
 
-    for (int i = 0; i < INSERTS; i += 1) {
+    for (int i = 0; i < inserts; i += 1) {
         if (btree_get(bt, keys[i]) != data[i]) {
             btree_print(bt);
 
@@ -59,7 +57,12 @@ int main(int argc, char* argv[]) {
     time_t t;
     srand((unsigned) time(&t));
 
-    test_btree_random();
+    for (int i = 0; i < REPEAT; i += 1) {
+        test_btree_random_no_updates(10);
+        test_btree_random_no_updates(100);
+        test_btree_random_no_updates(1000);
+        test_btree_random_no_updates(10000);
+    }
     
     return 0;
 }
