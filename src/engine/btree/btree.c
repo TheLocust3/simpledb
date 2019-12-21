@@ -365,9 +365,29 @@ btree* btree_insert(btree* bt, long key, long val) {
 }
 
 btree* btree_delete_at_leaf(btree* bt, long key) {
-    printf("Need to implement leaf deletion\n");
-    abort();
+    int delete_at = -1;
+    for (int i = 0; i < NODES; i += 1) {
+        if (key == bt->keys[i]) {
+            delete_at = i;
+            break;
+        }
+    }
 
+    if (delete_at != -1) {
+        for (int i = delete_at + 1; i < NODES; i += 1) {
+            bt->keys[i - 1] = bt->keys[i];
+            bt->data[i - 1] = bt->data[i];
+        }
+
+        bt->keys[NODES - 1] = -1;
+        bt->data[NODES - 1] = -1;
+
+        if (btree_size(bt) < MIN_CHILDREN) {
+           printf("Need to implement merging leaves\n");
+            abort();
+        }
+    }
+    
     return NULL;
 }
 

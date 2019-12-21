@@ -3,6 +3,7 @@
 
 #define NODES 5
 #define CHILDREN 6
+#define MIN_CHILDREN 3
 
 typedef struct btree {
     long keys[NODES];
