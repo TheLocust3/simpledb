@@ -349,7 +349,6 @@ btree* btree_insert_at_node(btree* bt, long key, long val) {
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val) {
-    btree* tmp;
     if (is_leaf(bt)) {
         return btree_insert_at_leaf(bt, key, val);
     }
@@ -365,8 +364,32 @@ btree* btree_insert(btree* bt, long key, long val) {
     return tmp == NULL ? bt : tmp;
 }
 
+btree* btree_delete_at_leaf(btree* bt, long key) {
+    printf("Need to implement leaf deletion\n");
+    abort();
+
+    return NULL;
+}
+
+btree* btree_delete_at_node(btree* bt, long key) {
+    printf("Need to implement node deletion\n");
+    abort();
+
+    return NULL;
+}
+
+btree* btree_delete_helper(btree* bt, long key) {
+    if (is_leaf(bt)) {
+        return btree_delete_at_leaf(bt, key);
+    }
+
+    return btree_delete_at_node(bt, key);
+}
+
 btree* btree_delete(btree* bt, long key) {
     log_debug("btree_delete(%ld)\n", key);
 
-    return bt;
+    btree* tmp = btree_delete_helper(bt, key);
+
+    return tmp == NULL ? bt : tmp;
 }
