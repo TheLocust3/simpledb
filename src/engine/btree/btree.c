@@ -157,6 +157,8 @@ long btree_get(btree* bt, long key) {
         for (int i = 0; i < NODES; i += 1) {
             if (key < bt->keys[i]) {
                 return btree_get(bt->children[i], key);
+            } else if (is_child_at_empty(bt, i)) {
+                return btree_get(bt->children[i - 1], key);
             }
         }
 
