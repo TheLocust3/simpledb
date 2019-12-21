@@ -35,8 +35,12 @@ int main(int argc, char* argv[]) {
     printf("\nSize: %ld\n", btree_size(test));
     btree_print(test);
 
-    printf("3: %ld\n", btree_get(test, 3));
-
+    long* keys = btree_keys(test);
+    for (int i = 0; i < btree_size(test); i += 1) {
+        printf("Key: %ld, Value: %ld\n", keys[i], btree_get(test, keys[i]));
+    }
+    
+    free(keys);
     btree_free(test);
     
     return 0;

@@ -73,22 +73,38 @@ long btree_size(btree* bt) {
     return size;
 }
 
-long* btree_keys(btree* bt) {
-    long* keys = malloc(btree_size(bt) * sizeof(long));
+void btree_keys_helper(btree* bt, long* keys, int offset) {
+    if (bt == NULL) {
+        return;
+    }
 
-    int offset = 0;
     if (is_leaf(bt)) {
         for (int i = 0; i < NODES; i += 1) {
-            if (!is_data_at_empty(bt, i)) {
+            if (!is_key_at_empty(bt, i)) {
                 keys[offset] = bt->keys[i];
 
                 offset += 1;
             }
         }
     } else {
-        printf("Implement for nodes\n");
-        abort();
+        for (int i = 0; i < NODES; i += 1) {
+            if (!is_child_at_empty(bt, i)) {
+                btree_keys_helper(bt->children[i], keys, offset);
+                
+                offset += btree_size(bt->children[i]);
+            }
+        }
+
+        if (!is_child_at_empty(bt, CHILDREN - 1)) {
+            btree_keys_helper(bt->children[CHILDREN - 1], keys, offset);
+        }
     }
+}
+
+long* btree_keys(btree* bt) {
+    long* keys = malloc(btree_size(bt) * sizeof(long));
+
+    btree_keys_helper(bt, keys, 0);
 
     return keys;
 }
@@ -127,14 +143,18 @@ void btree_print(btree* bt) {
 }
 
 long btree_get(btree* bt, long key) {
+    if (bt == NULL) {
+        return -1;
+    }
+
     if (is_leaf(bt)) {
         for (int i = 0; i < NODES; i += 1) {
-            if (key == bt->keys[i]) {
+            if (!is_key_at_empty(bt, i) && key == bt->keys[i]) {
                 return bt->data[i];
             }
         }
     } else {
-        for (int i = 0; i < CHILDREN; i += 1) {
+        for (int i = 0; i < NODES; i += 1) {
             if (key < bt->keys[i]) {
                 return btree_get(bt->children[i], key);
             }
