@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
     test = btree_insert(test, 75, 420);
     test = btree_insert(test, 76, 420);
     test = btree_insert(test, 77, 420);
+    test = btree_insert(test, 78, 420);
 
     printf("\nSize: %ld\n", btree_size(test));
     btree_print(test);

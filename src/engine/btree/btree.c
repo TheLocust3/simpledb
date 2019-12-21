@@ -134,43 +134,52 @@ long btree_get(btree* bt, long key) {
 
 btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
     int split_index = NODES / 2 + 1;
-
     long split_key = bt->keys[split_index];
 
-    btree* right_leaf = btree_malloc();
+    btree* right_node = btree_malloc();
 
-    for (int i = split_index; i < NODES; i += 1) {
-        right_leaf->keys[i - split_index] = bt->keys[i];
-        right_leaf->data[i - split_index] = bt->data[i];
+     for (int i = split_index; i < NODES; i += 1) {
+        right_node->keys[i - split_index] = bt->keys[i];
+        right_node->data[i - split_index] = bt->data[i];
 
         bt->keys[i] = -1;
         bt->data[i] = -1;
     }
 
-    right_leaf->keys[split_index - 1] = rightmost_key;
-    right_leaf->data[split_index - 1] = rightmost_val;
+    right_node->keys[split_index - 1] = rightmost_key;
+    right_node->data[split_index - 1] = rightmost_val;
 
     btree* parent = btree_malloc();
     parent->keys[0] = split_key;
     parent->children[0] = bt;
-    parent->children[1] = right_leaf;
+    parent->children[1] = right_node;
 
     return parent;
 }
 
-btree* btree_split_node(btree* bt, long rightmost_key, long rightmost_val) {
-    printf("Need to implement node splitting\n");
-    abort();
+btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_child) {
+    int split_index = NODES / 2 + 1;
+    long split_key = bt->keys[split_index];
 
-    return bt;
-}
+    btree* right_node = btree_malloc();
 
-btree* btree_split(btree* bt, long rightmost_key, long rightmost_val) {
-    if (is_leaf(bt)) {
-        return btree_split_leaf(bt, rightmost_key, rightmost_val);
+     for (int i = split_index; i < NODES; i += 1) {
+        right_node->keys[i - split_index] = bt->keys[i + 1];
+        right_node->children[i - split_index] = bt->children[i + 1];
+
+        bt->keys[i] = -1;
+        bt->children[i + 1] = NULL;
     }
 
-    return btree_split_node(bt, rightmost_key, rightmost_val);
+    right_node->keys[split_index - 2] = rightmost_key;
+    right_node->children[split_index - 1] = rightmost_right_child;
+
+    btree* parent = btree_malloc();
+    parent->keys[0] = split_key;
+    parent->children[0] = bt;
+    parent->children[1] = right_node;
+
+    return parent;
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val);
@@ -218,7 +227,7 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
     // if we end up with a different key than the initial key or we didn't find a good spot to
     // insert at, split the node and insert the key we have to the right
     if (insert_at == -1 || inserting_key != key) {
-        return btree_split(bt, inserting_key, inserting_val);
+        return btree_split_leaf(bt, inserting_key, inserting_val);
     }
 
     printf("btree_insert_at_leaf failed!\n");
@@ -251,7 +260,7 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         }
     }
 
-    for (int i = insert_at; i < NODES; i += 1) {
+    for (int i = insert_at; i != -1 && i < NODES; i += 1) {
         if (is_key_at_empty(parent, i)) {
             parent->keys[i] = inserting_key;
             parent->children[i] = inserting_left_child;
@@ -277,8 +286,9 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
     if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
-        printf("Need to implement node splitting");
-        abort();
+        btree_print(maybe_split);
+        printf("key %ld\n", inserting_key);
+        return btree_split_node(parent, inserting_key, inserting_right_child);
     }
 
     printf("btree_node_split_handler failed!\n");
@@ -288,13 +298,13 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 btree* btree_insert_at_node(btree* bt, long key, long val) {
     for (int i = 0; i < NODES; i += 1) {
         if (is_key_at_empty(bt, i)) { // no more keys in this node, traverse down rightmost child
-            return btree_node_split_handler(bt, btree_insert_helper(bt->children[i], key, val));
+            return btree_insert_helper(bt->children[i], key, val);
         } else if (key < bt->keys[i]) {
-            return btree_node_split_handler(bt, btree_insert_helper(bt->children[i], key, val));
+            return btree_insert_helper(bt->children[i], key, val);
         }
     }
 
-    return btree_node_split_handler(bt, btree_insert_helper(bt->children[CHILDREN - 1], key, val));
+    return btree_insert_helper(bt->children[CHILDREN - 1], key, val);
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val) {
@@ -303,7 +313,7 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
         return btree_insert_at_leaf(bt, key, val);
     }
 
-    return btree_insert_at_node(bt, key, val);
+    return btree_node_split_handler(bt, btree_insert_at_node(bt, key, val));
 }
 
 btree* btree_insert(btree* bt, long key, long val) {
