@@ -127,7 +127,21 @@ void btree_print(btree* bt) {
 }
 
 long btree_get(btree* bt, long key) {
-    printf("btree_get(%ld)\n", key);
+    if (is_leaf(bt)) {
+        for (int i = 0; i < NODES; i += 1) {
+            if (key == bt->keys[i]) {
+                return bt->data[i];
+            }
+        }
+    } else {
+        for (int i = 0; i < CHILDREN; i += 1) {
+            if (key < bt->keys[i]) {
+                return btree_get(bt->children[i], key);
+            }
+        }
+
+        return btree_get(bt->children[CHILDREN - 1], key);
+    }
 
     return -1;
 }

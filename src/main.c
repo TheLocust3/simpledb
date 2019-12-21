@@ -35,6 +35,8 @@ int main(int argc, char* argv[]) {
     printf("\nSize: %ld\n", btree_size(test));
     btree_print(test);
 
+    printf("3: %ld\n", btree_get(test, 3));
+
     btree_free(test);
     
     return 0;
