@@ -154,7 +154,7 @@ long btree_get_helper(btree* bt, long key) {
             }
         }
     } else {
-        for (int i = 0; i < NODES; i += 1) {
+        for (int i = 0; i < CHILDREN; i += 1) {
             if (key < bt->keys[i]) {
                 return btree_get_helper(bt->children[i], key);
             } else if (is_child_at_empty(bt, i)) {
