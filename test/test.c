@@ -2,35 +2,27 @@
 #include <stdlib.h>
 #include <time.h>
 #include <assert.h>
-#include <stdbool.h>
 
+#include "helpers.h"
 #include "../src/engine/btree/btree.h"
 
 #define REPEAT 3
 
-bool includes(int data, int* arr, int size) {
-    for (int i = 0; i < size; i += 1) {
-        if (data == arr[i]) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 int test_btree_random_no_updates(int inserts) {
+    int max_key_val = inserts * 10;
+
     btree* bt = btree_malloc();
 
-    int* keys = malloc(inserts * sizeof(int));
-    int* data = malloc(inserts * sizeof(int));
+    long* keys = malloc(inserts * sizeof(long));
+    long* data = malloc(inserts * sizeof(long));
     for (int i = 0; i < inserts; i += 1) {
-        int val;
+        long val;
         do {
-            val = rand();
-        } while (includes(val, keys, inserts));
+            val = nat_rand(max_key_val);
+        } while (includes(val, keys, i));
         keys[i] = val;
 
-        data[i] = rand();
+        data[i] = nat_rand(max_key_val);
         
 
         bt = btree_insert(bt, keys[i], data[i]);
@@ -40,7 +32,44 @@ int test_btree_random_no_updates(int inserts) {
         if (btree_get(bt, keys[i]) != data[i]) {
             btree_print(bt);
 
-            printf("Expected key: %d, value: %d\n", keys[i], data[i]);
+            printf("Expected key: %ld, value: %ld\n", keys[i], data[i]);
+            printf("Found value: %ld\n", btree_get(bt, keys[i]));
+            printf("test_btree_random failed!\n");
+
+            abort();
+        }
+    }
+
+    btree_free(bt);
+
+    return 0;
+}
+
+int test_btree_random(int inserts) {
+    int max_key_val = inserts * 10;
+    
+    btree* bt = btree_malloc();
+
+    long* keys = malloc(inserts * sizeof(long));
+    long* data = malloc(inserts * sizeof(long));
+    for (int i = 0; i < inserts; i += 1) {
+        keys[i] = nat_rand(max_key_val);
+
+        int index = index_of(keys[i], keys, i);
+        if (index != -1) {
+            data[i] = data[index];
+        } else {
+            data[i] = nat_rand(max_key_val);
+        }
+
+        bt = btree_insert(bt, keys[i], data[i]);
+    }
+
+    for (int i = 0; i < inserts; i += 1) {
+        if (btree_get(bt, keys[i]) != data[i]) {
+            btree_print(bt);
+
+            printf("Expected key: %ld, value: %ld\n", keys[i], data[i]);
             printf("Found value: %ld\n", btree_get(bt, keys[i]));
             printf("test_btree_random failed!\n");
 
@@ -57,12 +86,26 @@ int main(int argc, char* argv[]) {
     time_t t;
     srand((unsigned) time(&t));
 
+    printf("Running btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
         test_btree_random_no_updates(10);
         test_btree_random_no_updates(100);
         test_btree_random_no_updates(1000);
         test_btree_random_no_updates(10000);
     }
+
+    printf("btree_random_no_updates passed!\n\n");
+
+    printf("Running btree_random\n");
+    
+    for (int i = 0; i < REPEAT; i += 1) {
+        test_btree_random(10);
+        test_btree_random(100);
+        test_btree_random(1000);
+        test_btree_random(10000);
+    }
+
+    printf("btree_random passed!\n\n");
     
     return 0;
 }
