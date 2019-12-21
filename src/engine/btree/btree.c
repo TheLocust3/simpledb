@@ -142,7 +142,7 @@ void btree_print(btree* bt) {
     printf("\n");
 }
 
-long btree_get(btree* bt, long key) {
+long btree_get_helper(btree* bt, long key) {
     if (bt == NULL) {
         return -1;
     }
@@ -156,16 +156,22 @@ long btree_get(btree* bt, long key) {
     } else {
         for (int i = 0; i < NODES; i += 1) {
             if (key < bt->keys[i]) {
-                return btree_get(bt->children[i], key);
+                return btree_get_helper(bt->children[i], key);
             } else if (is_child_at_empty(bt, i)) {
-                return btree_get(bt->children[i - 1], key);
+                return btree_get_helper(bt->children[i - 1], key);
             }
         }
 
-        return btree_get(bt->children[CHILDREN - 1], key);
+        return btree_get_helper(bt->children[CHILDREN - 1], key);
     }
 
     return -1;
+}
+
+long btree_get(btree* bt, long key) {
+    printf("btree_get(%ld)\n", key);
+
+    return btree_get_helper(bt, key);
 }
 
 btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
@@ -322,7 +328,6 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
     if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
-        btree_print(maybe_split);
         printf("key %ld\n", inserting_key);
         return btree_split_node(parent, inserting_key, inserting_right_child);
     }
