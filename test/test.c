@@ -6,7 +6,7 @@
 
 #include "../src/engine/btree/btree.h"
 
-#define INSERTS 100
+#define INSERTS 30
 #define KEY_MAX 1000
 #define DATA_MAX 1000
 
@@ -43,12 +43,14 @@ int test_btree_random() {
             btree_print(bt);
 
             printf("Expected key: %d, value: %d\n", keys[i], data[i]);
-            printf("Found value: %d\n", btree_get(bt, keys[i]));
-            printf("test_btree_random failed!");
+            printf("Found value: %ld\n", btree_get(bt, keys[i]));
+            printf("test_btree_random failed!\n");
 
             abort();
         }
     }
+
+    btree_free(bt);
 
     return 0;
 }
@@ -57,12 +59,7 @@ int main(int argc, char* argv[]) {
     time_t t;
     srand((unsigned) time(&t));
 
-    if (test_btree_random() == -1) {
-        printf("test_btree_random failed!\n");
-        return -1;
-    } else {
-        printf("test_btree_random passed!\n");
-    }
+    test_btree_random();
     
     return 0;
 }

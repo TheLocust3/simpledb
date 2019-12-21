@@ -278,7 +278,7 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
 
 btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
     if (maybe_split == NULL) {
-        return parent;
+        return NULL;
     }
 
     // TODO: below code copied (a mildly modified) from btree_insert_at_leaf
@@ -328,7 +328,6 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
     if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
-        printf("key %ld\n", inserting_key);
         return btree_split_node(parent, inserting_key, inserting_right_child);
     }
 
