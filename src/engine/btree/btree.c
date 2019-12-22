@@ -364,6 +364,8 @@ btree* btree_insert(btree* bt, long key, long val) {
     return tmp == NULL ? bt : tmp;
 }
 
+btree* btree_delete_helper(btree* bt, long key);
+
 btree* btree_delete_at_leaf(btree* bt, long key) {
     int delete_at = -1;
     for (int i = 0; i < NODES; i += 1) {
@@ -383,7 +385,7 @@ btree* btree_delete_at_leaf(btree* bt, long key) {
         bt->data[NODES - 1] = -1;
 
         if (btree_size(bt) < MIN_CHILDREN) {
-           printf("Need to implement merging leaves\n");
+            printf("Need to implement merging leaves\n");
             abort();
         }
     }
@@ -392,8 +394,24 @@ btree* btree_delete_at_leaf(btree* bt, long key) {
 }
 
 btree* btree_delete_at_node(btree* bt, long key) {
-    printf("Need to implement node deletion\n");
-    abort();
+    int follow_at = -1;
+    for (int i = 0; i < NODES; i += 1) {
+        if (!is_key_at_empty(bt, i) && key < bt->keys[i]) {
+            follow_at = i;
+        }
+    }
+
+    btree* tmp;
+    if (follow_at == -1) {
+        tmp = btree_delete_helper(bt->children[CHILDREN - 1], key);
+    } else {
+        tmp = btree_delete_helper(bt->children[follow_at], key);
+    }
+
+    if (tmp != NULL) {
+        printf("Need to implement merging!\n");
+        abort();
+    }
 
     return NULL;
 }

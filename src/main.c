@@ -7,6 +7,11 @@ int main(int argc, char* argv[]) {
     btree* bt = btree_malloc();
 
     bt = btree_insert(bt, 1, 10);
+    bt = btree_insert(bt, 2, 10);
+    bt = btree_insert(bt, 3, 10);
+    bt = btree_insert(bt, 4, 10);
+    bt = btree_insert(bt, 5, 10);
+    bt = btree_insert(bt, 6, 10);
 
     btree_print(bt);
 
