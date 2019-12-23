@@ -459,7 +459,7 @@ btree* btree_delete_at_node(btree* bt, long key) {
         }
         
         if (merge_at != -1) {
-            for (int i = merge_at; i < NODES - 1; i += 1) {
+            for (int i = merge_at; i < NODES; i += 1) {
                 if (is_child_at_empty(bt, i)) {
                     break;
                 }
