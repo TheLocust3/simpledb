@@ -55,7 +55,7 @@ void btree_free(btree* bt) {
     free(bt);
 }
 
-long btree_size(btree* bt) {
+long node_size(btree* bt) {
     long size = 0;
     if (is_leaf(bt)) {
         for (int i = 0; i < NODES; i += 1) {
@@ -63,6 +63,21 @@ long btree_size(btree* bt) {
                 size += 1;
             }
         }
+    } else {
+        for (int i = 0; i < CHILDREN; i += 1) {
+            if (!is_child_at_empty(bt, i)) {
+                size += 1;
+            }
+        }
+    }
+
+    return size;
+}
+
+long btree_size(btree* bt) {
+    long size = 0;
+    if (is_leaf(bt)) {
+        size += node_size(bt);
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (!is_child_at_empty(bt, i)) {
@@ -384,33 +399,85 @@ btree* btree_delete_at_leaf(btree* bt, long key) {
         bt->keys[NODES - 1] = -1;
         bt->data[NODES - 1] = -1;
 
-        if (btree_size(bt) < MIN_CHILDREN) {
-            printf("Need to implement merging leaves\n");
-            abort();
+        if (node_size(bt) < MIN_CHILDREN) {
+            return bt; // return the leaf to be caught by it's parent and merged
         }
     }
     
     return NULL;
 }
 
+btree* btree_merge(btree* left, btree* right) {
+    int left_size = node_size(left);
+    for (int i = left_size; i < NODES; i += 1) {
+        left->keys[i] = right->keys[i - left_size];
+        left->data[i] = right->data[i - left_size];
+        left->children[i] = right->children[i - left_size];
+    }
+
+    left->children[CHILDREN - 1] = right->children[left_size];
+
+    return left;
+}
+
 btree* btree_delete_at_node(btree* bt, long key) {
     int follow_at = -1;
     for (int i = 0; i < NODES; i += 1) {
-        if (!is_key_at_empty(bt, i) && key < bt->keys[i]) {
+        if (key < bt->keys[i]) {
             follow_at = i;
+            break;
+        } else if (is_child_at_empty(bt, i)) {
+            follow_at = i - 1;
+            break;
         }
     }
 
-    btree* tmp;
     if (follow_at == -1) {
-        tmp = btree_delete_helper(bt->children[CHILDREN - 1], key);
-    } else {
-        tmp = btree_delete_helper(bt->children[follow_at], key);
+        follow_at = CHILDREN - 1;
     }
 
-    if (tmp != NULL) {
-        printf("Need to implement merging!\n");
-        abort();
+    btree* node = btree_delete_helper(bt->children[follow_at], key);
+
+    if (node != NULL) {
+        btree* left_sibling = follow_at > 0 ? bt->children[follow_at - 1] : NULL;
+        btree* right_sibling = follow_at < NODES ? bt->children[follow_at + 1] : NULL;
+
+        int merge_at = -1;
+        long separator = -1;
+        if (left_sibling != NULL && node_size(left_sibling) <= MIN_CHILDREN) {
+            // merge node into left sibling
+
+            bt->children[follow_at - 1] = btree_merge(left_sibling, node);
+            merge_at = follow_at;
+            separator = bt->keys[merge_at]; // TODO: make sure this is right
+        } else if (right_sibling != NULL && node_size(right_sibling) <= MIN_CHILDREN) {
+            // merge node into right sibling
+            
+            bt->children[follow_at] = btree_merge(node, right_sibling);
+            merge_at = follow_at + 1;
+            separator = bt->keys[merge_at];
+        }
+        
+        if (merge_at != -1) {
+            for (int i = merge_at; i < NODES - 1; i += 1) {
+                if (is_child_at_empty(bt, i)) {
+                    break;
+                }
+
+                bt->keys[i] = bt->keys[i + 1];
+                bt->data[i] = bt->data[i + 1];
+                bt->children[i] = bt->children[i + 1];
+            }
+
+            bt->keys[merge_at - 1] = separator;
+
+            bt->keys[NODES - 1] = -1;
+            bt->data[NODES - 1] = -1;
+            bt->children[CHILDREN - 1] = NULL;
+        } else {
+            // no good merge found, just move on
+            return NULL;
+        }
     }
 
     return NULL;

@@ -12,10 +12,13 @@ int main(int argc, char* argv[]) {
     bt = btree_insert(bt, 4, 10);
     bt = btree_insert(bt, 5, 10);
     bt = btree_insert(bt, 6, 10);
+    bt = btree_insert(bt, 7, 10);
+    bt = btree_insert(bt, 8, 10);
+    bt = btree_insert(bt, 9, 10);
 
     btree_print(bt);
 
-    bt = btree_delete(bt, 1);
+    bt = btree_delete(bt, 9);
 
     btree_print(bt);
 
