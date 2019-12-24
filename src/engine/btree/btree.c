@@ -415,7 +415,13 @@ btree* btree_merge(btree* left, btree* right) {
         left->children[i] = right->children[i - left_size];
     }
 
-    left->children[CHILDREN - 1] = right->children[left_size];
+    left->children[CHILDREN - 1] = right->children[left_size + 1];
+
+    if (is_node(left)) {
+        // if merging a node, we're missing one key (the first child of the right node)
+        // so promote the new child's first key
+        left->keys[left_size - 1] = left->children[left_size]->keys[0];
+    }
 
     return left;
 }
@@ -442,17 +448,19 @@ btree* btree_delete_at_node(btree* bt, long key) {
         btree* left_sibling = follow_at > 0 ? bt->children[follow_at - 1] : NULL;
         btree* right_sibling = follow_at < NODES ? bt->children[follow_at + 1] : NULL;
 
+        int max_children = is_leaf(node) ? NODES : CHILDREN;
+
         int merge_at = -1;
         long separator = -1;
-        if (left_sibling != NULL && node_size(left_sibling) <= MIN_CHILDREN) {
+        if (left_sibling != NULL && node_size(node) + node_size(left_sibling) <= max_children) {
             // merge node into left sibling
 
             bt->children[follow_at - 1] = btree_merge(left_sibling, node);
             merge_at = follow_at;
-            separator = bt->keys[merge_at]; // TODO: make sure this is right
-        } else if (right_sibling != NULL && node_size(right_sibling) <= MIN_CHILDREN) {
+            separator = bt->keys[merge_at];
+        } else if (right_sibling != NULL && node_size(node) + node_size(right_sibling) <= max_children) {
             // merge node into right sibling
-            
+
             bt->children[follow_at] = btree_merge(node, right_sibling);
             merge_at = follow_at + 1;
             separator = bt->keys[merge_at];
@@ -474,6 +482,15 @@ btree* btree_delete_at_node(btree* bt, long key) {
             bt->keys[NODES - 1] = -1;
             bt->data[NODES - 1] = -1;
             bt->children[CHILDREN - 1] = NULL;
+
+            if (node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
+                btree* new_bt = bt->children[0];
+                free(bt);
+
+                return new_bt;
+            }
+
+            return bt;
         } else {
             // no good merge found, just move on
             return NULL;
