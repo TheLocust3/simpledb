@@ -8,6 +8,21 @@
 
 #define REPEAT 3
 
+void test_btree_delete(btree* bt, long* keys, int inserts) {
+    for (int i = 0; i < inserts; i += 1) {
+        bt = btree_delete(bt, keys[i]);
+        
+        if (btree_get(bt, keys[i]) != -1) {
+            btree_print(bt);
+
+            printf("Failed to delete key: %ld\n", keys[i]);
+            printf("Found value: %ld\n", btree_get(bt, keys[i]));
+
+            abort();
+        }
+    }
+}
+
 int test_btree_random_no_updates(int inserts) {
     int max_key_val = inserts * 10;
 
@@ -39,6 +54,8 @@ int test_btree_random_no_updates(int inserts) {
             abort();
         }
     }
+
+    test_btree_delete(bt, keys, inserts);
 
     btree_free(bt);
 
@@ -77,6 +94,8 @@ int test_btree_random(int inserts) {
         }
     }
 
+    test_btree_delete(bt, keys, inserts);
+
     btree_free(bt);
 
     return 0;
@@ -86,7 +105,9 @@ int main(int argc, char* argv[]) {
     time_t t;
     srand((unsigned) time(&t));
 
-    printf("Running btree_random_no_updates\n");
+    test_btree_random_no_updates(100);
+
+    /*printf("Running btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
         test_btree_random_no_updates(10);
         test_btree_random_no_updates(100);
@@ -105,7 +126,7 @@ int main(int argc, char* argv[]) {
         test_btree_random(10000);
     }
 
-    printf("btree_random passed!\n\n");
+    printf("btree_random passed!\n\n");*/
     
     return 0;
 }

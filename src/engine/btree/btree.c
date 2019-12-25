@@ -415,9 +415,9 @@ btree* btree_merge(btree* left, btree* right) {
         left->children[i] = right->children[i - left_size];
     }
 
-    left->children[CHILDREN - 1] = right->children[left_size + 1];
-
     if (is_node(left)) {
+        left->children[CHILDREN - 1] = right->children[node_size(right) - 1];
+        
         // if merging a node, we're missing one key (the first child of the right node)
         // so promote the new child's first key
         left->keys[left_size - 1] = left->children[left_size]->keys[0];
@@ -426,14 +426,31 @@ btree* btree_merge(btree* left, btree* right) {
     return left;
 }
 
+long first_key(btree* bt) {
+    if (is_leaf(bt)) {
+        return bt->keys[0];
+    } else {
+        return first_key(bt->children[0]);
+    }
+}
+
+void prune_deleted_separators(btree* bt) {
+    // fixup any now deleted separators
+    for (int i = 0; i < NODES; i += 1) {
+        if (!is_key_at_empty(bt, i)) {
+            bt->keys[i] = first_key(bt->children[i + 1]);
+        }
+    }
+}
+
 btree* btree_delete_at_node(btree* bt, long key) {
     int follow_at = -1;
     for (int i = 0; i < NODES; i += 1) {
         if (key < bt->keys[i]) {
             follow_at = i;
             break;
-        } else if (is_child_at_empty(bt, i)) {
-            follow_at = i - 1;
+        } else if (is_key_at_empty(bt, i)) {
+            follow_at = i;
             break;
         }
     }
@@ -443,6 +460,7 @@ btree* btree_delete_at_node(btree* bt, long key) {
     }
 
     btree* node = btree_delete_helper(bt->children[follow_at], key);
+    prune_deleted_separators(bt);
 
     if (node != NULL) {
         btree* left_sibling = follow_at > 0 ? bt->children[follow_at - 1] : NULL;
@@ -485,7 +503,6 @@ btree* btree_delete_at_node(btree* bt, long key) {
 
             if (node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
                 btree* new_bt = bt->children[0];
-                free(bt);
 
                 return new_bt;
             }
@@ -493,10 +510,11 @@ btree* btree_delete_at_node(btree* bt, long key) {
             return bt;
         } else {
             // no good merge found, just move on
+            
             return NULL;
         }
     }
-
+    
     return NULL;
 }
 
