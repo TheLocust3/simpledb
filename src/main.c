@@ -153,15 +153,17 @@ int main(int argc, char* argv[]) {
     bt = btree_delete(bt, 125);
     bt = btree_delete(bt, 813);
     bt = btree_delete(bt, 368);
+    
     bt = btree_delete(bt, 791);
+    
     bt = btree_delete(bt, 196);
     bt = btree_delete(bt, 27);
     bt = btree_delete(bt, 29);
     bt = btree_delete(bt, 68);
     
-    // bt = btree_delete(bt, 943);
+    bt = btree_delete(bt, 943);
 
-    /*bt = btree_delete(bt, 518);
+    bt = btree_delete(bt, 518);
     bt = btree_delete(bt, 602);
     bt = btree_delete(bt, 199);
     bt = btree_delete(bt, 719);
@@ -208,7 +210,7 @@ int main(int argc, char* argv[]) {
     bt = btree_delete(bt, 520);
     bt = btree_delete(bt, 923);
     bt = btree_delete(bt, 174);
-    bt = btree_delete(bt, 421);*/
+    bt = btree_delete(bt, 421);
 
     btree_print(bt);
 

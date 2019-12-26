@@ -441,6 +441,7 @@ btree* btree_merge(btree* left, btree* right) {
     if (is_node(left)) {
         if (left_size + node_size(right) == CHILDREN) { // we only merge up to NODES, just append rightmost child to left
             left->children[CHILDREN - 1] = right->children[node_size(right) - 1];
+            left->keys[NODES - 1] = right->keys[node_size(right) - 2];
         }
 
         // if merging a node, we're missing one key (the first child of the right node)
@@ -528,7 +529,7 @@ btree* btree_delete_at_node(btree* bt, long key) {
             return bt;
         } else {
             // no good merge found, just move on
-            
+
             prune_deleted_separators(bt);
             return NULL;
         }
