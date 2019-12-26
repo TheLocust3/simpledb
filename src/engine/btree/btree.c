@@ -6,6 +6,10 @@
 #include "../../log.h"
 
 bool is_leaf(btree* bt) {
+    if (bt == NULL) {
+        return false;
+    }
+
     for (int i = 0; i < CHILDREN; i += 1) {
         if (bt->children[i] != NULL) {
             return false;
@@ -16,6 +20,10 @@ bool is_leaf(btree* bt) {
 } 
 
 bool is_node(btree* bt) {
+    if (bt == NULL) {
+        return false;
+    }
+
     return !is_leaf(bt);
 }
 
@@ -407,25 +415,6 @@ btree* btree_delete_at_leaf(btree* bt, long key) {
     return NULL;
 }
 
-btree* btree_merge(btree* left, btree* right) {
-    int left_size = node_size(left);
-    for (int i = left_size; i < NODES; i += 1) {
-        left->keys[i] = right->keys[i - left_size];
-        left->data[i] = right->data[i - left_size];
-        left->children[i] = right->children[i - left_size];
-    }
-
-    if (is_node(left)) {
-        left->children[CHILDREN - 1] = right->children[node_size(right) - 1];
-        
-        // if merging a node, we're missing one key (the first child of the right node)
-        // so promote the new child's first key
-        left->keys[left_size - 1] = left->children[left_size]->keys[0];
-    }
-
-    return left;
-}
-
 long first_key(btree* bt) {
     if (is_leaf(bt)) {
         return bt->keys[0];
@@ -434,10 +423,38 @@ long first_key(btree* bt) {
     }
 }
 
+btree* btree_merge(btree* left, btree* right) {
+    int left_size = node_size(left);
+    for (int i = left_size; i < NODES; i += 1) {
+        btree* right_child = right->children[i - left_size];
+
+        if (right_child != NULL) {
+            left->keys[i - 1] = first_key(right_child);
+        } else {
+            left->keys[i] = right->keys[i - left_size];
+        }
+
+        left->data[i] = right->data[i - left_size];
+        left->children[i] = right_child;
+    }
+
+    if (is_node(left)) {
+        if (left_size + node_size(right) == CHILDREN) { // we only merge up to NODES, just append rightmost child to left
+            left->children[CHILDREN - 1] = right->children[node_size(right) - 1];
+        }
+
+        // if merging a node, we're missing one key (the first child of the right node)
+        // so promote the new child's first key
+        left->keys[left_size - 1] = left->children[left_size]->keys[0];
+    }
+
+    return left;
+}
+
 void prune_deleted_separators(btree* bt) {
     // fixup any now deleted separators
     for (int i = 0; i < NODES; i += 1) {
-        if (!is_key_at_empty(bt, i)) {
+        if (!is_child_at_empty(bt, i + 1)) {
             bt->keys[i] = first_key(bt->children[i + 1]);
         }
     }
@@ -460,7 +477,6 @@ btree* btree_delete_at_node(btree* bt, long key) {
     }
 
     btree* node = btree_delete_helper(bt->children[follow_at], key);
-    prune_deleted_separators(bt);
 
     if (node != NULL) {
         btree* left_sibling = follow_at > 0 ? bt->children[follow_at - 1] : NULL;
@@ -477,7 +493,7 @@ btree* btree_delete_at_node(btree* bt, long key) {
             merge_at = follow_at;
             separator = bt->keys[merge_at];
         } else if (right_sibling != NULL && node_size(node) + node_size(right_sibling) <= max_children) {
-            // merge node into right sibling
+            // merge node into right siblings
 
             bt->children[follow_at] = btree_merge(node, right_sibling);
             merge_at = follow_at + 1;
@@ -501,20 +517,24 @@ btree* btree_delete_at_node(btree* bt, long key) {
             bt->data[NODES - 1] = -1;
             bt->children[CHILDREN - 1] = NULL;
 
-            if (node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
+            if (is_node(bt) && node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
                 btree* new_bt = bt->children[0];
 
+                prune_deleted_separators(new_bt);
                 return new_bt;
             }
 
+            prune_deleted_separators(bt);
             return bt;
         } else {
             // no good merge found, just move on
             
+            prune_deleted_separators(bt);
             return NULL;
         }
     }
     
+    prune_deleted_separators(bt);
     return NULL;
 }
 
