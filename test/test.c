@@ -105,9 +105,7 @@ int main(int argc, char* argv[]) {
     time_t t;
     srand((unsigned) time(&t));
 
-    test_btree_random_no_updates(100);
-
-    /*printf("Running btree_random_no_updates\n");
+    printf("Running btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
         test_btree_random_no_updates(10);
         test_btree_random_no_updates(100);
@@ -126,7 +124,7 @@ int main(int argc, char* argv[]) {
         test_btree_random(10000);
     }
 
-    printf("btree_random passed!\n\n");*/
+    printf("btree_random passed!\n\n");
     
     return 0;
 }

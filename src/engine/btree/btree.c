@@ -446,7 +446,7 @@ btree* btree_merge(btree* left, btree* right) {
 
         // if merging a node, we're missing one key (the first child of the right node)
         // so promote the new child's first key
-        left->keys[left_size - 1] = left->children[left_size]->keys[0];
+        left->keys[left_size - 1] = first_key(left->children[left_size]);
     }
 
     return left;
@@ -502,6 +502,9 @@ btree* btree_delete_at_node(btree* bt, long key) {
         }
         
         if (merge_at != -1) {
+            // at the beginning of loop, 770 is separator
+            // at the end of loop, 860 is separator which is wrong
+            // wtf
             for (int i = merge_at; i < NODES; i += 1) {
                 if (is_child_at_empty(bt, i)) {
                     break;
@@ -524,6 +527,8 @@ btree* btree_delete_at_node(btree* bt, long key) {
                 prune_deleted_separators(new_bt);
                 return new_bt;
             }
+
+            // btree_print(bt);
 
             prune_deleted_separators(bt);
             return bt;
