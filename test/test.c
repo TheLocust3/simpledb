@@ -23,6 +23,17 @@ void test_btree_delete(btree* bt, long* keys, int inserts) {
     }
 }
 
+void test_btree_size(btree* bt, long expected_size) {
+    if (btree_size(bt) != expected_size) {
+        btree_print(bt);
+
+        printf("Expected size of btree to be %ld\n", expected_size);
+        printf("Found size of %ld\n", btree_size(bt));
+
+        abort();
+    }
+}
+
 int test_btree_random_no_updates(int inserts) {
     int max_key_val = inserts * 10;
 
@@ -43,6 +54,8 @@ int test_btree_random_no_updates(int inserts) {
         bt = btree_insert(bt, keys[i], data[i]);
     }
 
+    test_btree_size(bt, inserts);
+
     for (int i = 0; i < inserts; i += 1) {
         if (btree_get(bt, keys[i]) != data[i]) {
             btree_print(bt);
@@ -56,6 +69,7 @@ int test_btree_random_no_updates(int inserts) {
     }
 
     test_btree_delete(bt, keys, inserts);
+    test_btree_size(bt, 0);
 
     btree_free(bt);
 
@@ -95,6 +109,7 @@ int test_btree_random(int inserts) {
     }
 
     test_btree_delete(bt, keys, inserts);
+    test_btree_size(bt, 0);
 
     btree_free(bt);
 
