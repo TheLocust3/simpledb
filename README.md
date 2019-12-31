@@ -1,7 +1,7 @@
 # simple-db
 
 A dead simple database, built for learning purposes. Algorithms and inspiration from
-[Database Internal](https://www.oreilly.com/library/view/database-internals/9781492040330/).
+[Database Internals](https://www.oreilly.com/library/view/database-internals/9781492040330/).
 
 ## todo
 
