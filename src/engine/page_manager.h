@@ -11,6 +11,7 @@ typedef struct page {
 } page;
 
 void page_manager_init(char* path);
+void page_manager_stop();
 
 page_id malloc_page();
 void* get_page(page_id pid);

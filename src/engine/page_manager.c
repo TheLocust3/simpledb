@@ -15,6 +15,10 @@ void page_manager_init(char* path) {
     // TODO: actually persist to a file
 }
 
+void page_manager_stop() {
+    // TODO: flush all pages to disk
+}
+
 page_id malloc_page() {
     page* page = mmap(0, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
