@@ -3,7 +3,12 @@
 
 #define PAGE_SIZE 4096
 
-typedef int page_id;
+typedef long page_id;
+
+typedef struct page {
+    page_id pid;
+    struct page* next;
+} page;
 
 void page_manager_init(char* path);
 
