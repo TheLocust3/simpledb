@@ -5,10 +5,13 @@
 #define CHILDREN 6
 #define MIN_CHILDREN 3
 
+#include "../page_manager.h"
+
 typedef struct btree {
+    page_id pid;
     long keys[NODES];
     long data[NODES];
-    struct btree* children[CHILDREN];
+    page_id children[CHILDREN];
 } btree;
 
 btree* btree_malloc();

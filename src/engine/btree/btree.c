@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "btree.h"
+#include "btree_manager.h"
 #include "../../log.h"
 
 bool is_leaf(btree* bt) {
@@ -11,7 +12,7 @@ bool is_leaf(btree* bt) {
     }
 
     for (int i = 0; i < CHILDREN; i += 1) {
-        if (bt->children[i] != NULL) {
+        if (btm_get_child(bt, i) != NULL) {
             return false;
         }
     }
@@ -36,19 +37,19 @@ bool is_key_at_empty(btree* bt, int index) {
 }
 
 bool is_child_at_empty(btree* bt, int index) {
-    return bt->children[index] == NULL;
+    return bt->children[index] == -1;
 }
 
 btree* btree_malloc() {
-    btree* bt = malloc(sizeof(btree));
+    btree* bt = btm_malloc();
 
     for (int i = 0; i < NODES; i += 1) {
         bt->keys[i] = -1;
         bt->data[i] = -1;
-        bt->children[i] = NULL;
+        btm_set_child(bt, i, NULL);
     }
 
-    bt->children[CHILDREN - 1] = NULL;
+    btm_set_child(bt, CHILDREN - 1, NULL);
 
     return bt;
 }
@@ -56,11 +57,11 @@ btree* btree_malloc() {
 void btree_free(btree* bt) {
     for (int i = 0; i < CHILDREN; i += 1) {
         if (!is_child_at_empty(bt, i)) {
-            btree_free(bt->children[i]);
+            btree_free(btm_get_child(bt, i));
         }
     }
 
-    free(bt);
+    btm_free(bt);
 }
 
 long node_size(btree* bt) {
@@ -89,7 +90,7 @@ long btree_size(btree* bt) {
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (!is_child_at_empty(bt, i)) {
-                size += btree_size(bt->children[i]);
+                size += btree_size(btm_get_child(bt, i));
             }
         }
     }
@@ -113,14 +114,14 @@ void btree_keys_helper(btree* bt, long* keys, int offset) {
     } else {
         for (int i = 0; i < NODES; i += 1) {
             if (!is_child_at_empty(bt, i)) {
-                btree_keys_helper(bt->children[i], keys, offset);
+                btree_keys_helper(btm_get_child(bt, i), keys, offset);
                 
-                offset += btree_size(bt->children[i]);
+                offset += btree_size(btm_get_child(bt, i));
             }
         }
 
         if (!is_child_at_empty(bt, CHILDREN - 1)) {
-            btree_keys_helper(bt->children[CHILDREN - 1], keys, offset);
+            btree_keys_helper(btm_get_child(bt, CHILDREN - 1), keys, offset);
         }
     }
 }
@@ -152,7 +153,7 @@ void btree_print_helper(btree* bt, int depth) {
             }
 
             if (!is_child_at_empty(bt, i)) {
-                btree_print_helper(bt->children[i], depth + 1);
+                btree_print_helper(btm_get_child(bt, i), depth + 1);
             }
         }
     }
@@ -180,13 +181,13 @@ long btree_get_helper(btree* bt, long key) {
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (key < bt->keys[i]) {
-                return btree_get_helper(bt->children[i], key);
+                return btree_get_helper(btm_get_child(bt, i), key);
             } else if (is_child_at_empty(bt, i)) {
-                return btree_get_helper(bt->children[i - 1], key);
+                return btree_get_helper(btm_get_child(bt, i - 1), key);
             }
         }
 
-        return btree_get_helper(bt->children[CHILDREN - 1], key);
+        return btree_get_helper(btm_get_child(bt, CHILDREN - 1), key);
     }
 
     return -1;
@@ -217,8 +218,9 @@ btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
 
     btree* parent = btree_malloc();
     parent->keys[0] = split_key;
-    parent->children[0] = bt;
-    parent->children[1] = right_node;
+
+    btm_set_child(parent, 0, bt);
+    btm_set_child(parent, 1, right_node);
 
     return parent;
 }
@@ -231,19 +233,19 @@ btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_ch
 
      for (int i = split_index; i < NODES; i += 1) {
         right_node->keys[i - split_index] = bt->keys[i + 1];
-        right_node->children[i - split_index] = bt->children[i + 1];
+        btm_set_child(right_node, i - split_index, btm_get_child(bt, i + 1));
 
         bt->keys[i] = -1;
-        bt->children[i + 1] = NULL;
+        btm_set_child(bt, i + 1, NULL);
     }
 
     right_node->keys[split_index - 2] = rightmost_key;
-    right_node->children[split_index - 1] = rightmost_right_child;
+    btm_set_child(right_node, split_index - 1, rightmost_right_child);
 
     btree* parent = btree_malloc();
     parent->keys[0] = split_key;
-    parent->children[0] = bt;
-    parent->children[1] = right_node;
+    btm_set_child(parent, 0, bt);
+    btm_set_child(parent, 1, right_node);
 
     return parent;
 }
@@ -305,18 +307,16 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         return NULL;
     }
 
-    // TODO: below code copied (a mildly modified) from btree_insert_at_leaf
-
     int insert_at = -1;
     long inserting_key = maybe_split->keys[0];
-    btree* inserting_left_child = maybe_split->children[0];
-    btree* inserting_right_child = maybe_split->children[1];
+    btree* inserting_left_child = btm_get_child(maybe_split, 0);
+    btree* inserting_right_child = btm_get_child(maybe_split, 1);
 
     for (int i = 0; i < NODES; i += 1) {
         if (is_key_at_empty(parent, i)) { // found an empty spot, insert here
             parent->keys[i] = inserting_key;
-            parent->children[i] = inserting_left_child;
-            parent->children[i + 1] = inserting_right_child;
+            btm_set_child(parent, i, inserting_left_child);
+            btm_set_child(parent, i + 1, inserting_right_child);
 
             return NULL;
         } else if (inserting_key < parent->keys[i]) { // key should be inserted right before this
@@ -329,26 +329,26 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
     for (int i = insert_at; i != -1 && i < NODES; i += 1) {
         if (is_key_at_empty(parent, i)) {
             parent->keys[i] = inserting_key;
-            parent->children[i] = inserting_left_child;
-            parent->children[i + 1] = inserting_right_child;
+            btm_set_child(parent, i, inserting_left_child);
+            btm_set_child(parent, i + 1, inserting_right_child);
 
             return NULL;
         }
         
         long tmp_key = parent->keys[i];
-        btree* tmp_right_child = parent->children[i + 1];
+        btree* tmp_right_child = btm_get_child(parent, i + 1);
 
         // insert key/val at spot, loop again to shift values to the left
         parent->keys[i] = inserting_key;
-        parent->children[i] = inserting_left_child;
-        parent->children[i + 1] = inserting_right_child;
+        btm_set_child(parent, i, inserting_left_child);
+        btm_set_child(parent, i + 1, inserting_right_child);
 
         inserting_key = tmp_key;
         inserting_left_child = inserting_right_child;
         inserting_right_child = tmp_right_child;
     }
 
-    free(maybe_split); // free the parent node that we didn't use
+    btm_free(maybe_split); // free the parent node that we didn't use
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
     if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
@@ -362,13 +362,13 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 btree* btree_insert_at_node(btree* bt, long key, long val) {
     for (int i = 0; i < NODES; i += 1) {
         if (is_key_at_empty(bt, i)) { // no more keys in this node, traverse down rightmost child
-            return btree_insert_helper(bt->children[i], key, val);
+            return btree_insert_helper(btm_get_child(bt, i), key, val);
         } else if (key < bt->keys[i]) {
-            return btree_insert_helper(bt->children[i], key, val);
+            return btree_insert_helper(btm_get_child(bt, i), key, val);
         }
     }
 
-    return btree_insert_helper(bt->children[CHILDREN - 1], key, val);
+    return btree_insert_helper(btm_get_child(bt, CHILDREN - 1), key, val);
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val) {
@@ -419,14 +419,14 @@ long first_key(btree* bt) {
     if (is_leaf(bt)) {
         return bt->keys[0];
     } else {
-        return first_key(bt->children[0]);
+        return first_key(btm_get_child(bt, 0));
     }
 }
 
 btree* btree_merge(btree* left, btree* right) {
     int left_size = node_size(left);
     for (int i = left_size; i < NODES; i += 1) {
-        btree* right_child = right->children[i - left_size];
+        btree* right_child = btm_get_child(right, i - left_size);
 
         if (right_child != NULL) {
             left->keys[i - 1] = first_key(right_child);
@@ -435,18 +435,18 @@ btree* btree_merge(btree* left, btree* right) {
         }
 
         left->data[i] = right->data[i - left_size];
-        left->children[i] = right_child;
+        btm_set_child(left, i, right_child);
     }
 
     if (is_node(left)) {
         if (left_size + node_size(right) == CHILDREN) { // we only merge up to NODES, just append rightmost child to left
-            left->children[CHILDREN - 1] = right->children[node_size(right) - 1];
+            btm_set_child(left, CHILDREN - 1, btm_get_child(right, node_size(right) - 1));
             left->keys[NODES - 1] = right->keys[node_size(right) - 2];
         }
 
         // if merging a node, we're missing one key (the first child of the right node)
         // so promote the new child's first key
-        left->keys[left_size - 1] = first_key(left->children[left_size]);
+        left->keys[left_size - 1] = first_key(btm_get_child(left, left_size));
     }
 
     return left;
@@ -456,7 +456,7 @@ void prune_deleted_separators(btree* bt) {
     // fixup any now deleted separators
     for (int i = 0; i < NODES; i += 1) {
         if (!is_child_at_empty(bt, i + 1)) {
-            bt->keys[i] = first_key(bt->children[i + 1]);
+            bt->keys[i] = first_key(btm_get_child(bt, i + 1));
         }
     }
 }
@@ -477,11 +477,11 @@ btree* btree_delete_at_node(btree* bt, long key) {
         follow_at = CHILDREN - 1;
     }
 
-    btree* node = btree_delete_helper(bt->children[follow_at], key);
+    btree* node = btree_delete_helper(btm_get_child(bt, follow_at), key);
 
     if (node != NULL) {
-        btree* left_sibling = follow_at > 0 ? bt->children[follow_at - 1] : NULL;
-        btree* right_sibling = follow_at < NODES ? bt->children[follow_at + 1] : NULL;
+        btree* left_sibling = follow_at > 0 ? btm_get_child(bt, follow_at - 1) : NULL;
+        btree* right_sibling = follow_at < NODES ? btm_get_child(bt, follow_at + 1) : NULL;
 
         int max_children = is_leaf(node) ? NODES : CHILDREN;
 
@@ -490,13 +490,13 @@ btree* btree_delete_at_node(btree* bt, long key) {
         if (left_sibling != NULL && node_size(node) + node_size(left_sibling) <= max_children) {
             // merge node into left sibling
 
-            bt->children[follow_at - 1] = btree_merge(left_sibling, node);
+            btm_set_child(bt, follow_at - 1, btree_merge(left_sibling, node));
             merge_at = follow_at;
             separator = bt->keys[merge_at];
         } else if (right_sibling != NULL && node_size(node) + node_size(right_sibling) <= max_children) {
             // merge node into right siblings
 
-            bt->children[follow_at] = btree_merge(node, right_sibling);
+            btm_set_child(bt, follow_at, btree_merge(node, right_sibling));
             merge_at = follow_at + 1;
             separator = bt->keys[merge_at];
         }
@@ -512,23 +512,21 @@ btree* btree_delete_at_node(btree* bt, long key) {
 
                 bt->keys[i] = bt->keys[i + 1];
                 bt->data[i] = bt->data[i + 1];
-                bt->children[i] = bt->children[i + 1];
+                btm_set_child(bt, i, btm_get_child(bt, i + 1));
             }
 
             bt->keys[merge_at - 1] = separator;
 
             bt->keys[NODES - 1] = -1;
             bt->data[NODES - 1] = -1;
-            bt->children[CHILDREN - 1] = NULL;
+            btm_set_child(bt, CHILDREN - 1, NULL);
 
             if (is_node(bt) && node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
-                btree* new_bt = bt->children[0];
+                btree* new_bt = btm_get_child(bt, 0);
 
                 prune_deleted_separators(new_bt);
                 return new_bt;
             }
-
-            // btree_print(bt);
 
             prune_deleted_separators(bt);
             return bt;
