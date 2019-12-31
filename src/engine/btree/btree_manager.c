@@ -14,6 +14,10 @@ btree* btm_malloc() {
     return bt;
 }
 
+bool btm_is_child_null(btree* bt, int child_idx) {
+    return bt->children[child_idx] == -1;
+}
+
 btree* btm_get_child(btree* bt, int child_idx) {
     page_id child_pid = bt->children[child_idx];
 
@@ -31,6 +35,10 @@ void btm_set_child(btree* bt, int child_idx, btree* child) {
     } else {
         bt->children[child_idx] = child->pid;
     }
+}
+
+void btm_set_child_by_child(btree* bt, int child_idx, btree* new_bt, int new_child_idx) {
+    bt->children[child_idx] = new_bt->children[new_child_idx];
 }
 
 void btm_free(btree* bt) {

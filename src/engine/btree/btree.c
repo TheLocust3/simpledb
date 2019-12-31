@@ -12,7 +12,7 @@ bool is_leaf(btree* bt) {
     }
 
     for (int i = 0; i < CHILDREN; i += 1) {
-        if (btm_get_child(bt, i) != NULL) {
+        if (!btm_is_child_null(bt, i)) {
             return false;
         }
     }
@@ -36,10 +36,6 @@ bool is_key_at_empty(btree* bt, int index) {
     return bt->keys[index] == -1;
 }
 
-bool is_child_at_empty(btree* bt, int index) {
-    return bt->children[index] == -1;
-}
-
 btree* btree_malloc() {
     btree* bt = btm_malloc();
 
@@ -56,7 +52,7 @@ btree* btree_malloc() {
 
 void btree_free(btree* bt) {
     for (int i = 0; i < CHILDREN; i += 1) {
-        if (!is_child_at_empty(bt, i)) {
+        if (!btm_is_child_null(bt, i)) {
             btree_free(btm_get_child(bt, i));
         }
     }
@@ -74,7 +70,7 @@ long node_size(btree* bt) {
         }
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
-            if (!is_child_at_empty(bt, i)) {
+            if (!btm_is_child_null(bt, i)) {
                 size += 1;
             }
         }
@@ -89,7 +85,7 @@ long btree_size(btree* bt) {
         size += node_size(bt);
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
-            if (!is_child_at_empty(bt, i)) {
+            if (!btm_is_child_null(bt, i)) {
                 size += btree_size(btm_get_child(bt, i));
             }
         }
@@ -113,14 +109,14 @@ void btree_keys_helper(btree* bt, long* keys, int offset) {
         }
     } else {
         for (int i = 0; i < NODES; i += 1) {
-            if (!is_child_at_empty(bt, i)) {
+            if (!btm_is_child_null(bt, i)) {
                 btree_keys_helper(btm_get_child(bt, i), keys, offset);
                 
                 offset += btree_size(btm_get_child(bt, i));
             }
         }
 
-        if (!is_child_at_empty(bt, CHILDREN - 1)) {
+        if (!btm_is_child_null(bt, CHILDREN - 1)) {
             btree_keys_helper(btm_get_child(bt, CHILDREN - 1), keys, offset);
         }
     }
@@ -152,7 +148,7 @@ void btree_print_helper(btree* bt, int depth) {
                 printf("%s%ld - separator\n", spacer, bt->keys[i - 1]);
             }
 
-            if (!is_child_at_empty(bt, i)) {
+            if (!btm_is_child_null(bt, i)) {
                 btree_print_helper(btm_get_child(bt, i), depth + 1);
             }
         }
@@ -182,7 +178,7 @@ long btree_get_helper(btree* bt, long key) {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (key < bt->keys[i]) {
                 return btree_get_helper(btm_get_child(bt, i), key);
-            } else if (is_child_at_empty(bt, i)) {
+            } else if (btm_is_child_null(bt, i)) {
                 return btree_get_helper(btm_get_child(bt, i - 1), key);
             }
         }
@@ -233,7 +229,7 @@ btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_ch
 
      for (int i = split_index; i < NODES; i += 1) {
         right_node->keys[i - split_index] = bt->keys[i + 1];
-        btm_set_child(right_node, i - split_index, btm_get_child(bt, i + 1));
+        btm_set_child_by_child(right_node, i - split_index, bt, i + 1);
 
         bt->keys[i] = -1;
         btm_set_child(bt, i + 1, NULL);
@@ -440,7 +436,7 @@ btree* btree_merge(btree* left, btree* right) {
 
     if (is_node(left)) {
         if (left_size + node_size(right) == CHILDREN) { // we only merge up to NODES, just append rightmost child to left
-            btm_set_child(left, CHILDREN - 1, btm_get_child(right, node_size(right) - 1));
+            btm_set_child_by_child(left, CHILDREN - 1, right, node_size(right) - 1);
             left->keys[NODES - 1] = right->keys[node_size(right) - 2];
         }
 
@@ -455,7 +451,7 @@ btree* btree_merge(btree* left, btree* right) {
 void prune_deleted_separators(btree* bt) {
     // fixup any now deleted separators
     for (int i = 0; i < NODES; i += 1) {
-        if (!is_child_at_empty(bt, i + 1)) {
+        if (!btm_is_child_null(bt, i + 1)) {
             bt->keys[i] = first_key(btm_get_child(bt, i + 1));
         }
     }
@@ -506,13 +502,13 @@ btree* btree_delete_at_node(btree* bt, long key) {
             // at the end of loop, 860 is separator which is wrong
             // wtf
             for (int i = merge_at; i < NODES; i += 1) {
-                if (is_child_at_empty(bt, i)) {
+                if (btm_is_child_null(bt, i)) {
                     break;
                 }
 
                 bt->keys[i] = bt->keys[i + 1];
                 bt->data[i] = bt->data[i + 1];
-                btm_set_child(bt, i, btm_get_child(bt, i + 1));
+                btm_set_child_by_child(bt, i, bt, i + 1);
             }
 
             bt->keys[merge_at - 1] = separator;

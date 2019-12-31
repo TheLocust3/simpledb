@@ -6,7 +6,7 @@
 #include "helpers.h"
 #include "../src/engine/btree/btree.h"
 
-#define REPEAT 3
+#define REPEAT 1
 
 void error_dump(btree* bt, long* keys, long* data, int size) {
     printf("ERROR DUMPING STATE\n");
