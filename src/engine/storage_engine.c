@@ -21,6 +21,17 @@ void engine_start(char* path) {
     storage_engine->btree = btree_malloc();
 }
 
+// reset engine. For testing purposes
+void engine_reset() {
+    log_info("Reseting storage engine\n");
+
+    storage_engine->page_counter = 0;
+    btree_free(storage_engine->btree);
+
+    page_manager_reset();
+    storage_engine->btree = btree_malloc();
+}
+
 void engine_stop() {
     log_info("Stopping storage engine\n");
 
@@ -36,7 +47,7 @@ void engine_delete(long key) {
     storage_engine->btree = btree_delete(storage_engine->btree, key);
 }
 
-long engine_get(long key, long value) {
+long engine_get(long key) {
     return btree_get(storage_engine->btree, key);
 }
 

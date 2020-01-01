@@ -13,6 +13,7 @@ typedef struct page {
 } page;
 
 void page_manager_init(engine* e, char* path);
+void page_manager_reset();
 void page_manager_stop();
 
 page_id malloc_page();

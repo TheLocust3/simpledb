@@ -26,6 +26,14 @@ void page_manager_init(engine* e, char* path) {
     storage_engine = e;
 }
 
+void page_manager_reset() {
+    int rv = ftruncate(storage_engine->fd, 0);
+    assert(rv != -1);
+
+    rv = lseek(storage_engine->fd, 0, SEEK_SET);
+    assert(rv != -1);
+}
+
 // flush all pages to disk
 void page_manager_stop() {
     int rv = close(storage_engine->fd);
