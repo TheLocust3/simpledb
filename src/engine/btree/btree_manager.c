@@ -42,5 +42,5 @@ void btm_set_child_by_child(btree* bt, int child_idx, btree* new_bt, int new_chi
 }
 
 void btm_free(btree* bt) {
-    free_page(bt->pid);
+    free_page(bt);
 }
