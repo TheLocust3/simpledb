@@ -9,15 +9,17 @@
 #define REPEAT 1
 
 void error_dump(long* keys, long* data, int size) {
-    printf("ERROR DUMPING STATE\n");
+    printf("\n\nFAILED... DUMPING STATE\n");
 
     engine_dump();
 
-    printf("INSERT ORDER");
+    printf("INSERT ORDER\n");
 
     for (int i = 0; i < size; i += 1) {
         printf("engine_insert(%ld, %ld);\n", keys[i], data[i]);
     }
+
+    printf("\n\n");
 }
 
 void test_btree_delete(long* keys, long* data, int inserts) {
@@ -135,7 +137,7 @@ int main(int argc, char* argv[]) {
         test_btree_random_no_updates(10);
         test_btree_random_no_updates(100);
         test_btree_random_no_updates(1000);
-        // test_btree_random_no_updates(10000);
+        test_btree_random_no_updates(10000);
     }
 
     printf("btree_random_no_updates passed!\n\n");
@@ -146,7 +148,7 @@ int main(int argc, char* argv[]) {
         test_btree_random(10);
         test_btree_random(100);
         test_btree_random(1000);
-        // test_btree_random(10000);
+        test_btree_random(10000);
     }
 
     printf("btree_random passed!\n\n");

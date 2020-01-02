@@ -10,6 +10,7 @@ bool btm_is_child_null(btree* bt, int child_idx);
 btree* btm_get_child(btree* bt, int child_idx);
 void btm_set_child(btree* bt, int child_idx, btree* child);
 void btm_set_child_by_child(btree* bt, int child_idx, btree* new_bt, int new_child_idx);
+void btm_flush(btree* bt);
 void btm_free(btree* bt);
 
 #endif

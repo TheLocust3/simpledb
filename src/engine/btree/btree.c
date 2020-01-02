@@ -218,6 +218,10 @@ btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
     btm_set_child(parent, 0, bt);
     btm_set_child(parent, 1, right_node);
 
+    btm_flush(bt);
+    btm_flush(right_node);
+    btm_flush(parent);
+
     return parent;
 }
 
@@ -243,6 +247,10 @@ btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_ch
     btm_set_child(parent, 0, bt);
     btm_set_child(parent, 1, right_node);
 
+    btm_flush(bt);
+    btm_flush(right_node);
+    btm_flush(parent);
+
     return parent;
 }
 
@@ -253,7 +261,7 @@ btree* btree_insert_at_leaf(btree* bt, long key, long val) {
     for (int i = 0; i < NODES; i += 1) {
         if (key == bt->keys[i]) { // found key, replace value
             bt->data[i] = val;
-
+            
             return NULL;
         } else if (is_data_at_empty(bt, i)) { // found an empty spot, insert here
             bt->keys[i] = key;
@@ -368,11 +376,20 @@ btree* btree_insert_at_node(btree* bt, long key, long val) {
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val) {
+    btree* tmp;
     if (is_leaf(bt)) {
-        return btree_insert_at_leaf(bt, key, val);
+        tmp = btree_insert_at_leaf(bt, key, val);
+    } else {
+        tmp = btree_node_split_handler(bt, btree_insert_at_node(bt, key, val));
     }
 
-    return btree_node_split_handler(bt, btree_insert_at_node(bt, key, val));
+    if (tmp == NULL) {
+        btm_flush(bt);
+    } else {
+        btm_flush(tmp);
+    }
+
+    return tmp;
 }
 
 btree* btree_insert(btree* bt, long key, long val) {
@@ -498,9 +515,6 @@ btree* btree_delete_at_node(btree* bt, long key) {
         }
         
         if (merge_at != -1) {
-            // at the beginning of loop, 770 is separator
-            // at the end of loop, 860 is separator which is wrong
-            // wtf
             for (int i = merge_at; i < NODES; i += 1) {
                 if (btm_is_child_null(bt, i)) {
                     break;
@@ -539,11 +553,20 @@ btree* btree_delete_at_node(btree* bt, long key) {
 }
 
 btree* btree_delete_helper(btree* bt, long key) {
+    btree* tmp;
     if (is_leaf(bt)) {
-        return btree_delete_at_leaf(bt, key);
+        tmp = btree_delete_at_leaf(bt, key);
+    } else {
+        tmp = btree_delete_at_node(bt, key);
     }
 
-    return btree_delete_at_node(bt, key);
+    if (tmp == NULL) {
+        btm_flush(bt);
+    } else {
+        btm_flush(tmp);
+    }
+
+    return tmp;
 }
 
 btree* btree_delete(btree* bt, long key) {
