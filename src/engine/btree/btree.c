@@ -389,7 +389,7 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
         btm_flush(tmp);
     }
 
-    // TODO: free all the pages except the root here
+    // TODO: free all the pages except the root here to avoid memory leaks
 
     return tmp;
 }
