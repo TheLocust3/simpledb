@@ -50,7 +50,6 @@ void page_manager_stop() {
 page_id malloc_page() {
     page_id pid = storage_engine->page_counter;
     if (freelist != NULL) { // assign pid to be one of the free slots
-    printf("test\n");
         pid = freelist->car;
         freelist = freelist->cdr;
 
