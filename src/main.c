@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
     engine_delete(66);
     engine_delete(947);*/
     
-    // engine_dump();
+    engine_dump();
 
     engine_stop();
 

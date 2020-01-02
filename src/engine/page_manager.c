@@ -10,8 +10,10 @@
 #include <assert.h>
 
 #include "page_manager.h"
+#include "linked_list.h"
 
 static engine* storage_engine;
+static list* freelist;
 
 // initialize datafile
 void page_manager_init(engine* e, char* path) {
@@ -27,6 +29,9 @@ void page_manager_init(engine* e, char* path) {
 }
 
 void page_manager_reset() {
+    cons_free(freelist);
+    freelist = NULL;
+
     int rv = ftruncate(storage_engine->fd, 0);
     assert(rv != -1);
 
@@ -38,18 +43,27 @@ void page_manager_reset() {
 void page_manager_stop() {
     int rv = close(storage_engine->fd);
     assert(rv != -1);
+
+    cons_free(freelist);
 }
 
 page_id malloc_page() {
     page_id pid = storage_engine->page_counter;
+    if (freelist != NULL) { // assign pid to be one of the free slots
+    printf("test\n");
+        pid = freelist->car;
+        freelist = freelist->cdr;
 
-    int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
-    void* page = malloc(PAGE_SIZE);
-    flush_page(pid, page);
+        // the location has already been written to so nothing needs to be done
+    } else {
+        storage_engine->page_counter += 1;
 
-    storage_engine->page_counter += 1;
+        int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
+        void* page = malloc(PAGE_SIZE);
+        flush_page(pid, page);
 
-    free(page);
+        free(page);
+    }
 
     return pid;
 }
@@ -75,6 +89,6 @@ void flush_page(page_id pid, void* page) {
 }
 
 void free_page(page_id pid) {
-    // remove page from the cache, free page in memory, delete page on disk
-    // TODO
+    // add page_id to freelist so new mallocs can overwrite memory
+    freelist = cons(pid, freelist);
 }
