@@ -121,11 +121,10 @@ int main(int argc, char* argv[]) {
     engine_delete(282);
     engine_delete(595);
     engine_delete(544);
-    // TODO: ^ this puts the btree in a bad state
 
-    /*engine_delete(459);
+    engine_delete(459);
     engine_delete(66);
-    engine_delete(947);*/
+    engine_delete(947);
     
     engine_dump();
 

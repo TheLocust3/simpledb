@@ -389,7 +389,7 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
         btm_flush(tmp);
     }
 
-    // TODO: free all the pages except the root here to avoid memory leaks
+    // TODO: free all the pages except the root here to avoid memory leaks (not delete)
 
     return tmp;
 }
@@ -536,8 +536,30 @@ btree* btree_delete_at_node(btree* bt, long key) {
             if (is_node(bt) && node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
                 btree* new_bt = btm_get_child(bt, 0);
 
+                // TODO: free bt
+
                 prune_deleted_separators(new_bt);
                 return new_bt;
+            }
+
+            int empty_at = -1;
+            for (int i = 0; i < CHILDREN; i += 1) {
+                if (!btm_is_child_null(bt, i) && node_size(btm_get_child(bt, i)) == 0) {
+                    empty_at = i;
+                }
+            }
+
+            if (empty_at != -1) {
+                for (int i = empty_at; i < NODES; i += 1) {
+                    if (btm_is_child_null(bt, i)) {
+                        break;
+                    }
+
+                    bt->keys[i] = bt->keys[i + 1];
+                    btm_set_child_by_child(bt, i, bt, i + 1);
+                }
+
+                btm_set_child(bt, CHILDREN - 1, NULL);
             }
 
             prune_deleted_separators(bt);
