@@ -8,18 +8,39 @@
 
 #define REPEAT 3
 
-void error_dump(long* keys, long* data, int size) {
+void error_dump() {
     printf("\n\nFAILED... DUMPING STATE\n");
 
     engine_dump();
 
-    printf("INSERT ORDER\n");
+    printf("\n\n");
+}
+
+void test_btree_size(long expected_size) {
+    if (engine_size() != expected_size) {
+        error_dump();
+
+        printf("Expected size of btree to be %ld\n", expected_size);
+        printf("Found size of %ld\n", engine_size());
+
+        abort();
+    }
+}
+
+void test_btree_gets(long* keys, long* data, long size) {
+    test_btree_size(size);
 
     for (int i = 0; i < size; i += 1) {
-        printf("engine_insert(%ld, %ld);\n", keys[i], data[i]);
-    }
+        if (engine_get(keys[i]) != data[i]) {
+            error_dump();
 
-    printf("\n\n");
+            printf("Expected key: %ld, value: %ld\n", keys[i], data[i]);
+            printf("Found value: %ld\n", engine_get(keys[i]));
+            printf("test_btree_random failed!\n");
+
+            abort();
+        }
+    }
 }
 
 void test_btree_delete(long* keys, long* data, int inserts) {
@@ -27,24 +48,15 @@ void test_btree_delete(long* keys, long* data, int inserts) {
         engine_delete(keys[i]);
         
         if (engine_get(keys[i]) != -1) {
-            error_dump(keys, data, inserts);
+            error_dump();
 
             printf("Failed to delete key: %ld\n", keys[i]);
             printf("Found value: %ld\n", engine_get(keys[i]));
 
             abort();
         }
-    }
-}
 
-void test_btree_size(long* keys, long* data, long expected_size) {
-    if (engine_size() != expected_size) {
-        error_dump(keys, data, expected_size);
-
-        printf("Expected size of btree to be %ld\n", expected_size);
-        printf("Found size of %ld\n", engine_size());
-
-        abort();
+        test_btree_gets(keys + i + 1, data + i + 1, inserts - i - 1); // ensure that we haven't lost any data
     }
 }
 
@@ -63,27 +75,14 @@ int test_btree_random_no_updates(int inserts) {
         keys[i] = val;
 
         data[i] = nat_rand(max_key_val);
-        
 
         engine_insert(keys[i], data[i]);
     }
 
-    test_btree_size(keys, data, inserts);
-
-    for (int i = 0; i < inserts; i += 1) {
-        if (engine_get(keys[i]) != data[i]) {
-            error_dump(keys, data, inserts);
-
-            printf("Expected key: %ld, value: %ld\n", keys[i], data[i]);
-            printf("Found value: %ld\n", engine_get(keys[i]));
-            printf("test_btree_random failed!\n");
-
-            abort();
-        }
-    }
+    test_btree_gets(keys, data, inserts);
 
     test_btree_delete(keys, data, inserts);
-    test_btree_size(keys, data, 0);
+    test_btree_size(0);
 
     return 0;
 }
@@ -95,6 +94,7 @@ int test_btree_random(int inserts) {
 
     long* keys = malloc(inserts * sizeof(long));
     long* data = malloc(inserts * sizeof(long));
+    long size = 0;
     for (int i = 0; i < inserts; i += 1) {
         keys[i] = nat_rand(max_key_val);
 
@@ -103,25 +103,16 @@ int test_btree_random(int inserts) {
             data[i] = data[index];
         } else {
             data[i] = nat_rand(max_key_val);
+            size += 1;
         }
 
         engine_insert(keys[i], data[i]);
     }
 
-    for (int i = 0; i < inserts; i += 1) {
-        if (engine_get(keys[i]) != data[i]) {
-            error_dump(keys, data, inserts);
-
-            printf("Expected key: %ld, value: %ld\n", keys[i], data[i]);
-            printf("Found value: %ld\n", engine_get(keys[i]));
-            printf("test_btree_random failed!\n");
-
-            abort();
-        }
-    }
+    test_btree_gets(keys, data, size);
 
     test_btree_delete(keys, data, inserts);
-    test_btree_size(keys, data, 0);
+    test_btree_size(0);
 
     return 0;
 }
@@ -137,7 +128,7 @@ int main(int argc, char* argv[]) {
         test_btree_random_no_updates(10);
         test_btree_random_no_updates(100);
         test_btree_random_no_updates(1000);
-        test_btree_random_no_updates(10000);
+        // test_btree_random_no_updates(10000);
     }
 
     printf("btree_random_no_updates passed!\n\n");
@@ -148,7 +139,7 @@ int main(int argc, char* argv[]) {
         test_btree_random(10);
         test_btree_random(100);
         test_btree_random(1000);
-        test_btree_random(10000);
+        // test_btree_random(10000);
     }
 
     printf("btree_random passed!\n\n");
