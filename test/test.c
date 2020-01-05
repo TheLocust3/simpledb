@@ -6,7 +6,7 @@
 #include "helpers.h"
 #include "../src/engine/storage_engine.h"
 
-#define REPEAT 1
+#define REPEAT 3
 
 void error_dump(long* keys, long* data, int size) {
     printf("\n\nFAILED... DUMPING STATE\n");

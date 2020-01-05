@@ -58,6 +58,8 @@ page_id malloc_page() {
         storage_engine->page_counter += 1;
 
         int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
+        assert(rv != -1);
+
         void* page = malloc(PAGE_SIZE);
         flush_page(pid, page);
 
@@ -74,7 +76,7 @@ void* get_page(page_id pid) {
 
     void* page = malloc(PAGE_SIZE);
     ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
-    assert(size == PAGE_SIZE);
+    assert(size == PAGE_SIZE); // TODO: implement a retry in case we fail to read the entire page
 
     return page;
 }

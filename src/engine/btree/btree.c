@@ -431,6 +431,10 @@ btree* btree_delete_at_leaf(btree* bt, long key) {
 }
 
 long first_key(btree* bt) {
+    if (bt == NULL) {
+        return -1;
+    }
+
     if (is_leaf(bt)) {
         return bt->keys[0];
     } else {
