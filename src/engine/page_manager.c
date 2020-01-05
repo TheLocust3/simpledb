@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <assert.h>
+#include <time.h>
+#include <string.h>
 
 #include "page_manager.h"
 #include "linked_list.h"
@@ -22,8 +24,8 @@ void page_manager_init(engine* e, char* path) {
     e->fd = open(path, O_RDWR | O_CREAT);
     assert(e->fd != -1);
 
-    int rv = lseek(e->fd, 0, SEEK_SET);
-    assert(rv != -1);
+    long off = lseek(e->fd, 0, SEEK_SET);
+    assert(off == 0);
 
     storage_engine = e;
 }
@@ -35,8 +37,8 @@ void page_manager_reset() {
     int rv = ftruncate(storage_engine->fd, 0);
     assert(rv != -1);
 
-    rv = lseek(storage_engine->fd, 0, SEEK_SET);
-    assert(rv != -1);
+    long off = lseek(storage_engine->fd, 0, SEEK_SET);
+    assert(off == 0);
 }
 
 // flush all pages to disk
@@ -52,40 +54,61 @@ page_id malloc_page() {
     if (freelist != NULL) { // assign pid to be one of the free slots
         pid = freelist->car;
         freelist = freelist->cdr;
-
-        // the location has already been written to so nothing needs to be done
     } else {
         storage_engine->page_counter += 1;
-
-        int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
-        assert(rv != -1);
-
-        void* page = malloc(PAGE_SIZE);
-        flush_page(pid, page);
-
-        free(page);
     }
+
+    void* page = malloc(PAGE_SIZE);
+    memset(page, 0, PAGE_SIZE);
+    flush_page(pid, page);
+
+    free(page);
 
     return pid;
 }
 
+void read_backoff(page_id pid, void* page) {
+    struct timespec tim;
+    tim.tv_sec  = 0;
+    tim.tv_nsec = 100000000L;
+
+
+    ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
+    int attempts = 0;
+    while (size != PAGE_SIZE) {
+        if (attempts >= 5) {
+            printf("Failed to read page: %ld/%ld from disk\n", pid, storage_engine->page_counter);
+            assert(1 == 0);
+        }
+
+        size = read(storage_engine->fd, page, PAGE_SIZE);
+        nanosleep(&tim, NULL);
+
+        attempts += 1;
+        tim.tv_nsec *= 2;
+    };
+}
+
 // given page_id, check if we have a cached page otherwise convert the id into a location on disk
 void* get_page(page_id pid) {
-    int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
-    assert(rv != -1);
+    long loc = pid * PAGE_SIZE;
+
+    long off = lseek(storage_engine->fd, loc, SEEK_SET);
+    assert(off == loc); // ensure file offset is correct
 
     void* page = malloc(PAGE_SIZE);
-    ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
-    assert(size == PAGE_SIZE); // TODO: implement a retry in case we fail to read the entire page
+    read_backoff(pid, page);
 
     return page;
 }
 
 void flush_page(page_id pid, void* page) {
-    int rv = lseek(storage_engine->fd, pid * PAGE_SIZE, SEEK_SET);
-    assert(rv != -1);
+    long loc = pid * PAGE_SIZE;
 
-    rv = write(storage_engine->fd, page, PAGE_SIZE);
+    long off = lseek(storage_engine->fd, loc, SEEK_SET);
+    assert(off == loc);
+
+    int rv = write(storage_engine->fd, page, PAGE_SIZE);
     assert(rv != -1);
 }
 

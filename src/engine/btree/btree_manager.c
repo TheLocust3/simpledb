@@ -1,5 +1,6 @@
 // layer between the page manager and the btree algorithms
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "btree_manager.h"

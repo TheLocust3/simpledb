@@ -9,7 +9,7 @@ db: $(OBJS)
 	gcc -o $@ $^
 
 testdb: $(TEST_OBJS)
-	gcc -o $@ $^
+	gcc -g -o $@ $^
 
 %.o: %.c $(HDRS)
 	gcc -c -o $@ $<

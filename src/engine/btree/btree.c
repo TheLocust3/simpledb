@@ -444,6 +444,10 @@ long first_key(btree* bt) {
 
 btree* btree_merge(btree* left, btree* right) {
     int left_size = node_size(left);
+    if (left_size == 0) { // merging right into an empty leaf
+        return right;
+    }
+
     for (int i = left_size; i < NODES; i += 1) {
         btree* right_child = btm_get_child(right, i - left_size);
 

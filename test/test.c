@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
 
     printf("btree_random_no_updates passed!\n\n");
 
-    printf("Running btree_random\n");
+   printf("Running btree_random\n");
     
     for (int i = 0; i < REPEAT; i += 1) {
         test_btree_random(10);
