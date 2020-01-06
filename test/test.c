@@ -87,6 +87,9 @@ int test_btree_random_no_updates(int inserts, bool fast) {
     test_btree_delete(keys, data, inserts, fast);
     test_btree_size(0);
 
+    free(data);
+    free(keys);
+
     return 0;
 }
 
@@ -114,8 +117,25 @@ int test_btree_random(int inserts, bool fast) {
 
     test_btree_gets(keys, data, size);
 
-    test_btree_delete(keys, data, inserts, fast);
+    // remove duplicates from keys for delete tests
+    long* final_keys = malloc(size * sizeof(long));
+    long* final_data = malloc(size * sizeof(long));
+    long final_size = 0;
+    for (int i = 0; i < inserts; i += 1) {
+        if (index_of(keys[i], final_keys, final_size) == -1) {
+            final_keys[final_size] = keys[i];
+            final_data[final_size] = data[i];
+            final_size += 1;
+        }
+    }
+
+    test_btree_delete(final_keys, final_data, final_size, fast);
     test_btree_size(0);
+
+    free(final_data);
+    free(final_keys);
+    free(data);
+    free(keys);
 
     return 0;
 }

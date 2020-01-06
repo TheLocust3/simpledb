@@ -6,27 +6,29 @@
 int main(int argc, char* argv[]) {
     engine_start("test.db");
 
-    engine_insert(11, 40);
-    engine_insert(59, 92);
-    engine_insert(84, 37);
-    engine_insert(40, 19);
-    engine_insert(1, 64);
-    engine_insert(13, 31);
-    engine_insert(79, 34);
-    engine_insert(63, 36);
-    engine_insert(88, 5);
-    engine_insert(82, 46);
+    engine_insert(92, 27);
+    engine_insert(81, 27);
+    engine_insert(14, 53);
+    engine_insert(71, 82);
+    engine_insert(87, 0);
+    engine_insert(66, 64);
+    engine_insert(92, 27);
+    engine_insert(51, 58);
+    engine_insert(89, 2);
+    engine_insert(22, 91);
 
-    engine_delete(11);
-    /*engine_delete(59);
-    engine_delete(84);
-    engine_delete(40);
-    engine_delete(1);
-    engine_delete(13);
-    engine_delete(79);
-    engine_delete(63);
-    engine_delete(88);
-    engine_delete(82);*/
+    engine_dump();
+
+    engine_delete(92);
+    /*engine_delete(81);
+    engine_delete(14);
+    engine_delete(71);
+    engine_delete(87);
+    engine_delete(66);
+    engine_delete(92);
+    engine_delete(51);
+    engine_delete(89);
+    engine_delete(22);*/
     
     engine_dump();
 
