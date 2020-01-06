@@ -472,6 +472,8 @@ btree* btree_merge(btree* left, btree* right) {
         left->keys[left_size - 1] = first_key(btm_get_child(left, left_size));
     }
 
+    btm_flush(left);
+
     return left;
 }
 
@@ -518,8 +520,8 @@ btree* btree_delete_at_node(btree* bt, long key) {
             separator = bt->keys[merge_at];
         } else if (right_sibling != NULL && node_size(node) + node_size(right_sibling) <= max_children) {
             // merge node into right siblings
-
-            btm_set_child(bt, follow_at, btree_merge(node, right_sibling));
+            btree* tmp = btree_merge(node, right_sibling);
+            btm_set_child(bt, follow_at, tmp);
             merge_at = follow_at + 1;
             separator = bt->keys[merge_at];
         }
@@ -540,6 +542,8 @@ btree* btree_delete_at_node(btree* bt, long key) {
             bt->keys[NODES - 1] = -1;
             bt->data[NODES - 1] = -1;
             btm_set_child(bt, CHILDREN - 1, NULL);
+
+            btm_flush(bt);
 
             if (is_node(bt) && node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
                 btree* new_bt = btm_get_child(bt, 0);
