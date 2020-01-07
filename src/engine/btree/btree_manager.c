@@ -46,6 +46,13 @@ void btm_flush(btree* bt) {
     flush_page(bt->pid, bt);
 }
 
-void btm_free(btree* bt) {
+void btm_delete(btree* bt) {
     free_page(bt->pid);
+    btm_free(bt);
+}
+
+void btm_free(btree* bt) {
+    if (bt == NULL) return;
+
+    free(bt);
 }

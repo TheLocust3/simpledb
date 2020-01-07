@@ -5,8 +5,6 @@ A dead simple database, built for learning purposes. Algorithms and inspiration 
 
 ## todo
 
-- Fix deletion bugs (there seem to be a lot)
-- Free pages from memory so only root stays in memory inbetween btree traversals
 - Better page manager
   - Currently I'm just reading/writing to a file and letting Linux cache everything
 - Lock Manager

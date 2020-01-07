@@ -146,25 +146,6 @@ int main(int argc, char* argv[]) {
 
     engine_start("test.db");
 
-    printf("Running slow btree_random_no_updates\n");
-    for (int i = 0; i < REPEAT; i += 1) {
-        test_btree_random_no_updates(10, false);
-        test_btree_random_no_updates(100, false);
-        test_btree_random_no_updates(1000, false);
-    }
-
-    printf("Slow btree_random_no_updates passed!\n\n");
-
-    printf("Running slow btree_random\n");
-    
-    for (int i = 0; i < REPEAT; i += 1) {
-        test_btree_random(10, false);
-        test_btree_random(100, false);
-        test_btree_random(1000, false);
-    }
-
-    printf("Slow btree_random passed!\n\n");
-
     printf("Running fast btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
         test_btree_random_no_updates(10, true);
@@ -185,6 +166,25 @@ int main(int argc, char* argv[]) {
     }
 
     printf("Fast btree_random passed!\n\n");
+
+    printf("Running slow btree_random_no_updates\n");
+    for (int i = 0; i < REPEAT; i += 1) {
+        test_btree_random_no_updates(10, false);
+        test_btree_random_no_updates(100, false);
+        test_btree_random_no_updates(1000, false);
+    }
+
+    printf("Slow btree_random_no_updates passed!\n\n");
+
+    printf("Running slow btree_random\n");
+    
+    for (int i = 0; i < REPEAT; i += 1) {
+        test_btree_random(10, false);
+        test_btree_random(100, false);
+        test_btree_random(1000, false);
+    }
+
+    printf("Slow btree_random passed!\n\n");
 
     engine_stop();
     

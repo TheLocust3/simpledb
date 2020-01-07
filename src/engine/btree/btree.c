@@ -57,7 +57,7 @@ void btree_free(btree* bt) {
         }
     }
 
-    btm_free(bt);
+    btm_delete(bt);
 }
 
 long node_size(btree* bt) {
@@ -86,7 +86,9 @@ long btree_size(btree* bt) {
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (!btm_is_child_null(bt, i)) {
-                size += btree_size(btm_get_child(bt, i));
+                btree* child = btm_get_child(bt, i);
+                size += btree_size(child);
+                btm_free(child);
             }
         }
     }
@@ -110,14 +112,18 @@ void btree_keys_helper(btree* bt, long* keys, int offset) {
     } else {
         for (int i = 0; i < NODES; i += 1) {
             if (!btm_is_child_null(bt, i)) {
-                btree_keys_helper(btm_get_child(bt, i), keys, offset);
+                btree* child = btm_get_child(bt, i);
+                btree_keys_helper(child, keys, offset);
                 
-                offset += btree_size(btm_get_child(bt, i));
+                offset += btree_size(child);
+                btm_free(child);
             }
         }
 
         if (!btm_is_child_null(bt, CHILDREN - 1)) {
-            btree_keys_helper(btm_get_child(bt, CHILDREN - 1), keys, offset);
+            btree* child = btm_get_child(bt, CHILDREN - 1);
+            btree_keys_helper(child, keys, offset);
+            btm_free(child);
         }
     }
 }
@@ -149,7 +155,9 @@ void btree_print_helper(btree* bt, int depth) {
             }
 
             if (!btm_is_child_null(bt, i)) {
-                btree_print_helper(btm_get_child(bt, i), depth + 1);
+                btree* child = btm_get_child(bt, i);
+                btree_print_helper(child, depth + 1);
+                btm_free(child);
             }
         }
     }
@@ -177,13 +185,25 @@ long btree_get_helper(btree* bt, long key) {
     } else {
         for (int i = 0; i < CHILDREN; i += 1) {
             if (key < bt->keys[i]) {
-                return btree_get_helper(btm_get_child(bt, i), key);
+                btree* child = btm_get_child(bt, i);
+                long out = btree_get_helper(child, key);
+                btm_free(child);
+
+                return out;
             } else if (btm_is_child_null(bt, i)) {
-                return btree_get_helper(btm_get_child(bt, i - 1), key);
+                btree* child = btm_get_child(bt, i - 1);
+                long out = btree_get_helper(child, key);
+                btm_free(child);
+
+                return out;
             }
         }
 
-        return btree_get_helper(btm_get_child(bt, CHILDREN - 1), key);
+        btree* child = btm_get_child(bt, CHILDREN - 1);
+        long out = btree_get_helper(child, key);
+        btm_free(child);
+
+        return out;
     }
 
     return -1;
@@ -322,6 +342,9 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
             btm_set_child(parent, i, inserting_left_child);
             btm_set_child(parent, i + 1, inserting_right_child);
 
+            btm_free(inserting_right_child);
+            btm_free(inserting_left_child);
+
             return NULL;
         } else if (inserting_key < parent->keys[i]) { // key should be inserted right before this
             insert_at = i;
@@ -335,6 +358,9 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
             parent->keys[i] = inserting_key;
             btm_set_child(parent, i, inserting_left_child);
             btm_set_child(parent, i + 1, inserting_right_child);
+
+            btm_free(inserting_right_child);
+            btm_free(inserting_left_child);
 
             return NULL;
         }
@@ -352,11 +378,15 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         inserting_right_child = tmp_right_child;
     }
 
-    btm_free(maybe_split); // free the parent node that we didn't use
+    btm_delete(maybe_split); // free the parent node that we didn't use
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
     if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
-        return btree_split_node(parent, inserting_key, inserting_right_child);
+        btree* tmp = btree_split_node(parent, inserting_key, inserting_right_child);
+
+        btm_free(inserting_right_child);
+        btm_free(inserting_left_child);
+        return tmp;
     }
 
     log_error("btree_node_split_handler failed!\n");
@@ -366,13 +396,25 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
 btree* btree_insert_at_node(btree* bt, long key, long val) {
     for (int i = 0; i < NODES; i += 1) {
         if (is_key_at_empty(bt, i)) { // no more keys in this node, traverse down rightmost child
-            return btree_insert_helper(btm_get_child(bt, i), key, val);
+            btree* child = btm_get_child(bt, i);
+            btree* tmp = btree_insert_helper(child, key, val);
+            btm_free(child);
+            
+            return tmp;
         } else if (key < bt->keys[i]) {
-            return btree_insert_helper(btm_get_child(bt, i), key, val);
+            btree* child = btm_get_child(bt, i);
+            btree* tmp = btree_insert_helper(child, key, val);
+            btm_free(child);
+
+            return tmp;
         }
     }
 
-    return btree_insert_helper(btm_get_child(bt, CHILDREN - 1), key, val);
+    btree* child = btm_get_child(bt, CHILDREN - 1);
+    btree* tmp = btree_insert_helper(child, key, val);
+    btm_free(child);
+
+    return tmp;
 }
 
 btree* btree_insert_helper(btree* bt, long key, long val) {
@@ -388,8 +430,6 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
     } else {
         btm_flush(tmp);
     }
-
-    // TODO: free all the pages except the root here to avoid memory leaks (not delete)
 
     return tmp;
 }
@@ -438,7 +478,11 @@ long first_key(btree* bt) {
     if (is_leaf(bt)) {
         return bt->keys[0];
     } else {
-        return first_key(btm_get_child(bt, 0));
+        btree* child = btm_get_child(bt, 0);
+        long key = first_key(child);
+        btm_free(child);
+
+        return key;
     }
 }
 
@@ -459,6 +503,8 @@ btree* btree_merge(btree* left, btree* right) {
 
         left->data[i] = right->data[i - left_size];
         btm_set_child(left, i, right_child);
+
+        btm_free(right_child);
     }
 
     if (is_node(left)) {
@@ -469,7 +515,9 @@ btree* btree_merge(btree* left, btree* right) {
 
         // if merging a node, we're missing one key (the first child of the right node)
         // so promote the new child's first key
-        left->keys[left_size - 1] = first_key(btm_get_child(left, left_size));
+        btree* child = btm_get_child(left, left_size);
+        left->keys[left_size - 1] = first_key(child);
+        btm_free(child);
     }
 
     btm_flush(left);
@@ -481,7 +529,9 @@ void prune_deleted_separators(btree* bt) {
     // fixup any now deleted separators
     for (int i = 0; i < NODES; i += 1) {
         if (!btm_is_child_null(bt, i + 1)) {
-            bt->keys[i] = first_key(btm_get_child(bt, i + 1));
+            btree* child = btm_get_child(bt, i + 1);
+            bt->keys[i] = first_key(child);
+            btm_free(child);
         }
     }
 }
@@ -525,6 +575,9 @@ btree* btree_delete_at_node(btree* bt, long key) {
             merge_at = follow_at + 1;
             separator = bt->keys[merge_at];
         }
+
+        btm_free(right_sibling);
+        btm_free(left_sibling);
         
         if (merge_at != -1) {
             for (int i = merge_at; i < NODES; i += 1) {
@@ -548,7 +601,7 @@ btree* btree_delete_at_node(btree* bt, long key) {
             if (is_node(bt) && node_size(bt) == 1) { // there's only one child, so promote the child and remove bt
                 btree* new_bt = btm_get_child(bt, 0);
 
-                // TODO: free bt
+                btm_delete(bt);
 
                 prune_deleted_separators(new_bt);
                 return new_bt;
@@ -556,9 +609,11 @@ btree* btree_delete_at_node(btree* bt, long key) {
 
             int empty_at = -1;
             for (int i = 0; i < CHILDREN; i += 1) {
-                if (!btm_is_child_null(bt, i) && node_size(btm_get_child(bt, i)) == 0) {
+                btree* child = btm_get_child(bt, i);
+                if (!btm_is_child_null(bt, i) && node_size(child) == 0) {
                     empty_at = i;
                 }
+                btm_free(child);
             }
 
             if (empty_at != -1) {
