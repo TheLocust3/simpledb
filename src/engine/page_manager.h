@@ -1,7 +1,9 @@
 #ifndef PAGE_MANAGER_H
 #define PAGE_MANAGER_H
 
-#define PAGE_SIZE 4096
+#include "btree/btree.h"
+
+static const size_t PAGE_SIZE = sizeof(btree);
 
 #include "storage_engine.h"
 

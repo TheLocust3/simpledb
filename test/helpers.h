@@ -36,7 +36,7 @@ static void stop_timer() {
     clock_t end_time = clock();
 
     double diff = ((double) (end_time - start_time) / 1000000.0F ) * 1000;
-    printf("took %.2fms\n", diff);
+    printf("took %.0fms\n", diff);
 }
 
 #endif
