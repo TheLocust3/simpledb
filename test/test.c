@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "helpers.h"
 #include "../src/engine/storage_engine.h"
+#include "helpers.h"
 
 #define REPEAT 3
 
@@ -64,6 +64,8 @@ void test_btree_delete(long* keys, long* data, int inserts, bool fast) {
 }
 
 int test_btree_random_no_updates(int inserts, bool fast) {
+    printf("\ntest_btree_random_no_updates inserts: %d fast: %d\n", inserts, fast);
+
     engine_reset();
 
     int max_key_val = inserts * 10;
@@ -90,10 +92,14 @@ int test_btree_random_no_updates(int inserts, bool fast) {
     free(data);
     free(keys);
 
+    printf("test passed!\n");
+
     return 0;
 }
 
 int test_btree_random(int inserts, bool fast) {
+    printf("\ntest_btree_random inserts: %d fast: %d\n", inserts, fast);
+
     engine_reset();
 
     int max_key_val = inserts * 10;
@@ -137,54 +143,82 @@ int test_btree_random(int inserts, bool fast) {
     free(data);
     free(keys);
 
+    printf("test passed!\n");
+
     return 0;
 }
 
 int main(int argc, char* argv[]) {
+    printf("Running tests\n");
+
     time_t t;
     srand((unsigned) time(&t));
 
     engine_start("test.db");
 
-    printf("Running fast btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
+        start_timer();
         test_btree_random_no_updates(10, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random_no_updates(100, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random_no_updates(1000, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random_no_updates(10000, true);
+        stop_timer();
     }
-
-    printf("Fast btree_random_no_updates passed!\n\n");
-
-    printf("Running fast btree_random\n");
     
     for (int i = 0; i < REPEAT; i += 1) {
+        start_timer();
         test_btree_random(10, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random(100, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random(1000, true);
+        stop_timer();
+
+        start_timer();
         test_btree_random(10000, true);
+        stop_timer();
     }
 
-    printf("Fast btree_random passed!\n\n");
-
-    printf("Running slow btree_random_no_updates\n");
     for (int i = 0; i < REPEAT; i += 1) {
+        start_timer();
         test_btree_random_no_updates(10, false);
+        stop_timer();
+
+        start_timer();
         test_btree_random_no_updates(100, false);
+        stop_timer();
+
+        start_timer();
         test_btree_random_no_updates(1000, false);
+        stop_timer();
     }
-
-    printf("Slow btree_random_no_updates passed!\n\n");
-
-    printf("Running slow btree_random\n");
     
     for (int i = 0; i < REPEAT; i += 1) {
+        start_timer();
         test_btree_random(10, false);
-        test_btree_random(100, false);
-        test_btree_random(1000, false);
-    }
+        stop_timer();
 
-    printf("Slow btree_random passed!\n\n");
+        start_timer();
+        test_btree_random(100, false);
+        stop_timer();
+
+        start_timer();
+        test_btree_random(1000, false);
+        stop_timer();
+    }
 
     engine_stop();
     

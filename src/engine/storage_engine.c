@@ -23,8 +23,6 @@ void engine_start(char* path) {
 
 // reset engine. For testing purposes
 void engine_reset() {
-    log_info("Reseting storage engine\n");
-
     storage_engine->page_counter = 0;
     btree_free(storage_engine->btree);
 
