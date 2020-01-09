@@ -16,6 +16,8 @@
 
 static engine* storage_engine;
 static list* freelist;
+static page_node* cache = NULL;
+static int page_list_size = 0;
 
 // initialize datafile
 void page_manager_init(engine* e, char* path) {
@@ -58,51 +60,45 @@ page_id malloc_page() {
         storage_engine->page_counter += 1;
     }
 
-    void* page = malloc(PAGE_SIZE);
+    page_node* page = malloc(PAGE_SIZE);
     memset(page, 0, PAGE_SIZE);
     flush_page(pid, page);
 
-    free(page);
+    // add the page to the cache if there's space
+    // TODO: use a real algorithm for this, not Jake's super inefficient caching TM
+    if (page_list_size <= MAX_PAGE_LIST_SIZE) {
+        page->pid = pid;
+        page->next = cache;
+
+        cache = page;
+        page_list_size += 1;
+    } else {
+        free(page);
+    }
 
     return pid;
 }
 
-void read_backoff(page_id pid, void* page) {
-    struct timespec tim;
-    tim.tv_sec  = 0;
-    tim.tv_nsec = 100000000L;
-
-
-    ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
-    int attempts = 0;
-    while (size != PAGE_SIZE) {
-        if (attempts >= 5) {
-            printf("Failed to read page: %ld/%ld from disk\n", pid, storage_engine->page_counter);
-            assert(1 == 0);
-        }
-
-        size = read(storage_engine->fd, page, PAGE_SIZE);
-        nanosleep(&tim, NULL);
-
-        attempts += 1;
-        tim.tv_nsec *= 2;
-    };
-}
-
 // given page_id, check if we have a cached page otherwise convert the id into a location on disk
 void* get_page(page_id pid) {
+    // TODO: check for page in cache
+
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
     assert(off == loc); // ensure file offset is correct
 
     void* page = malloc(PAGE_SIZE);
-    read_backoff(pid, page);
+
+    ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
+    assert(size == PAGE_SIZE);
 
     return page;
 }
 
 void flush_page(page_id pid, void* page) {
+    // TODO: add page to cache
+
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
@@ -115,4 +111,27 @@ void flush_page(page_id pid, void* page) {
 void free_page(page_id pid) {
     // add page_id to freelist so new mallocs can overwrite memory
     freelist = cons(pid, freelist);
+
+    // delete the page from the cache
+    page_node* prev_page = NULL;
+    page_node* on_page = cache;
+    while (on_page != NULL) {
+        if (on_page->pid == pid) {
+            if (prev_page == NULL) {
+                page_node* tmp = cache;
+                cache = cache->next;
+                free(tmp);
+                
+                return;
+            }
+
+            prev_page->next = on_page->next;
+            free(on_page);
+
+            return;
+        }
+
+        prev_page = on_page;
+        on_page = on_page->next;
+    }
 }

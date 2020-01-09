@@ -54,5 +54,5 @@ void btm_delete(btree* bt) {
 void btm_free(btree* bt) {
     if (bt == NULL) return;
 
-    free(bt);
+    // free(bt);
 }
