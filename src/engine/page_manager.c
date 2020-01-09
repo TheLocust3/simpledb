@@ -13,11 +13,10 @@
 
 #include "page_manager.h"
 #include "linked_list.h"
+#include "page_cache.h"
 
 static engine* storage_engine;
 static list* freelist;
-static page_node* cache = NULL;
-static int page_list_size = 0;
 
 // initialize datafile
 void page_manager_init(engine* e, char* path) {
@@ -60,19 +59,11 @@ page_id malloc_page() {
         storage_engine->page_counter += 1;
     }
 
-    page_node* page = malloc(PAGE_SIZE);
+    void* page = malloc(PAGE_SIZE);
     memset(page, 0, PAGE_SIZE);
     flush_page(pid, page);
 
-    // add the page to the cache if there's space
-    // TODO: use a real algorithm for this, not Jake's super inefficient caching TM
-    if (page_list_size <= MAX_PAGE_LIST_SIZE) {
-        page->pid = pid;
-        page->next = cache;
-
-        cache = page;
-        page_list_size += 1;
-    } else {
+    if (!page_cache_add(pid, page)) { // no more space in the cache, free and move on
         free(page);
     }
 
@@ -112,26 +103,5 @@ void free_page(page_id pid) {
     // add page_id to freelist so new mallocs can overwrite memory
     freelist = cons(pid, freelist);
 
-    // delete the page from the cache
-    page_node* prev_page = NULL;
-    page_node* on_page = cache;
-    while (on_page != NULL) {
-        if (on_page->pid == pid) {
-            if (prev_page == NULL) {
-                page_node* tmp = cache;
-                cache = cache->next;
-                free(tmp);
-                
-                return;
-            }
-
-            prev_page->next = on_page->next;
-            free(on_page);
-
-            return;
-        }
-
-        prev_page = on_page;
-        on_page = on_page->next;
-    }
+    page_cache_remove(pid);
 }

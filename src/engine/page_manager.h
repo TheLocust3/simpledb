@@ -11,11 +11,6 @@ static const size_t PAGE_SIZE = sizeof(btree);
 
 typedef long page_id;
 
-typedef struct page_node {
-    page_id pid;
-    struct page_node* next;
-} page_node;
-
 void page_manager_init(engine* e, char* path);
 void page_manager_reset();
 void page_manager_stop();
