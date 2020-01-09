@@ -1,13 +1,13 @@
 #ifndef PAGE_MANAGER_H
 #define PAGE_MANAGER_H
 
-#include "btree/btree.h"
+#include "../btree/btree.h"
 
 #define MAX_PAGE_LIST_SIZE 10
 
 static const size_t PAGE_SIZE = sizeof(btree);
 
-#include "storage_engine.h"
+#include "../storage_engine.h"
 
 typedef long page_id;
 

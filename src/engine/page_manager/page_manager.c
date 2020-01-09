@@ -72,7 +72,10 @@ page_id malloc_page() {
 
 // given page_id, check if we have a cached page otherwise convert the id into a location on disk
 void* get_page(page_id pid) {
-    // TODO: check for page in cache
+    void* cached_page = page_cache_get(pid);
+    if (cached_page != NULL) {
+        return cached_page;
+    }
 
     long loc = pid * PAGE_SIZE;
 
@@ -88,7 +91,7 @@ void* get_page(page_id pid) {
 }
 
 void flush_page(page_id pid, void* page) {
-    // TODO: add page to cache
+    // TODO: remove page from cache/give user the option to save it
 
     long loc = pid * PAGE_SIZE;
 

@@ -2,3 +2,4 @@
 db
 testdb
 *.db
+.DS_Store

@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "btree_manager.h"
-#include "../page_manager.h"
+#include "../btree/btree_manager.h"
+#include "../page_manager/page_manager.h"
 
 btree* btm_malloc() {
     page_id bt_pid = malloc_page();

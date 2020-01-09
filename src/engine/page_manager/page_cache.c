@@ -1,3 +1,5 @@
+// small page cache used by page_manager before checking for the page on disk
+
 #include <stdio.h>
 #include <stdlib.h>
 
