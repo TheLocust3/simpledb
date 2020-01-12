@@ -603,7 +603,6 @@ btree* btree_delete_at_node(btree* bt, long key) {
 
                 btm_delete(bt);
 
-                prune_deleted_separators(new_bt);
                 return new_bt;
             }
 
@@ -629,17 +628,14 @@ btree* btree_delete_at_node(btree* bt, long key) {
                 btm_set_child(bt, CHILDREN - 1, NULL);
             }
 
-            prune_deleted_separators(bt);
             return bt;
         } else {
             // no good merge found, just move on
 
-            prune_deleted_separators(bt);
             return NULL;
         }
     }
     
-    prune_deleted_separators(bt);
     return NULL;
 }
 
