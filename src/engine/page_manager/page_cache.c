@@ -49,6 +49,15 @@ void page_cache_remove(long pid) {
     }
 }
 
-page_node* page_cache_get(long pid) {
+void* page_cache_get(long pid) {
+    page_node* on_page = cache;
+    while (on_page != NULL) {
+        if (on_page->pid == pid) {
+            return (void*) (((char *) on_page) + sizeof(page_node));
+        }
+
+        on_page = on_page->next;
+    }
+
     return NULL;
 }

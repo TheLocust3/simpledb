@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define MAX_PAGE_CACHE_SIZE 10
+#define MAX_PAGE_CACHE_SIZE 0
 
 typedef struct page_node {
     long pid;
@@ -12,6 +12,6 @@ typedef struct page_node {
 
 bool page_cache_add(long pid, void* mem);
 void page_cache_remove(long pid);
-page_node* page_cache_get(long pid);
+void* page_cache_get(long pid);
 
 #endif

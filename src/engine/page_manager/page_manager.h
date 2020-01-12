@@ -2,10 +2,10 @@
 #define PAGE_MANAGER_H
 
 #include "../btree/btree.h"
-
-#define MAX_PAGE_LIST_SIZE 10
+#include "page_cache.h"
 
 static const size_t PAGE_SIZE = sizeof(btree);
+static const size_t IN_MEMORY_PAGE_SIZE = sizeof(page_node) + PAGE_SIZE;
 
 #include "../storage_engine.h"
 

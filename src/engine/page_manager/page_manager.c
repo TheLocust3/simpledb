@@ -13,7 +13,6 @@
 
 #include "page_manager.h"
 #include "linked_list.h"
-#include "page_cache.h"
 
 static engine* storage_engine;
 static list* freelist;
@@ -59,8 +58,8 @@ page_id malloc_page() {
         storage_engine->page_counter += 1;
     }
 
-    void* page = malloc(PAGE_SIZE);
-    memset(page, 0, PAGE_SIZE);
+    void* page = malloc(IN_MEMORY_PAGE_SIZE);
+    memset(page, 0, IN_MEMORY_PAGE_SIZE);
     flush_page(pid, page);
 
     if (!page_cache_add(pid, page)) { // no more space in the cache, free and move on
@@ -82,7 +81,7 @@ void* get_page(page_id pid) {
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
     assert(off == loc); // ensure file offset is correct
 
-    void* page = malloc(PAGE_SIZE);
+    void* page = malloc(IN_MEMORY_PAGE_SIZE);
 
     ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
     assert(size == PAGE_SIZE);
