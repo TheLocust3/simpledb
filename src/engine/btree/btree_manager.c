@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../lock_manager/lock_manager.h"
 #include "../btree/btree_manager.h"
 #include "../page_manager/page_manager.h"
 
@@ -20,6 +21,7 @@ bool btm_is_child_null(btree* bt, int child_idx) {
 }
 
 btree* btm_get_child(btree* bt, int child_idx) {
+    lock_manager_acquire(bt->pid);
     page_id child_pid = bt->children[child_idx];
 
     if (child_pid == -1) {
@@ -47,12 +49,16 @@ void btm_flush(btree* bt) {
 }
 
 void btm_delete(btree* bt) {
+    lock_manager_release(bt->pid);
+
     free_page(bt->pid);
     btm_free(bt);
 }
 
 void btm_free(btree* bt) {
     if (bt == NULL) return;
+
+    lock_manager_release(bt->pid);
 
     // free(bt);
 }

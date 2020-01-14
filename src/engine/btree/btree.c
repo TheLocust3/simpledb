@@ -5,6 +5,7 @@
 #include "btree.h"
 #include "btree_manager.h"
 #include "../../log.h"
+#include "../lock_manager/lock_manager.h"
 
 bool is_leaf(btree* bt) {
     if (bt == NULL) {
@@ -38,6 +39,7 @@ bool is_key_at_empty(btree* bt, int index) {
 
 btree* btree_malloc() {
     btree* bt = btm_malloc();
+    lock_manager_acquire(bt->pid);
 
     for (int i = 0; i < NODES; i += 1) {
         bt->keys[i] = -1;
@@ -239,7 +241,11 @@ btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
     btm_set_child(parent, 1, right_node);
 
     btm_flush(bt);
+    btm_free(bt);
+
     btm_flush(right_node);
+    btm_free(right_node);
+
     btm_flush(parent);
 
     return parent;
@@ -268,7 +274,11 @@ btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_ch
     btm_set_child(parent, 1, right_node);
 
     btm_flush(bt);
+    btm_free(bt);
+    
     btm_flush(right_node);
+    btm_free(right_node);
+
     btm_flush(parent);
 
     return parent;
@@ -523,17 +533,6 @@ btree* btree_merge(btree* left, btree* right) {
     btm_flush(left);
 
     return left;
-}
-
-void prune_deleted_separators(btree* bt) {
-    // fixup any now deleted separators
-    for (int i = 0; i < NODES; i += 1) {
-        if (!btm_is_child_null(bt, i + 1)) {
-            btree* child = btm_get_child(bt, i + 1);
-            bt->keys[i] = first_key(child);
-            btm_free(child);
-        }
-    }
 }
 
 btree* btree_delete_at_node(btree* bt, long key) {

@@ -1,6 +1,8 @@
 #ifndef PAGE_MANAGER_H
 #define PAGE_MANAGER_H
 
+#include <stdlib.h>
+
 #include "../btree/btree.h"
 #include "page_cache.h"
 

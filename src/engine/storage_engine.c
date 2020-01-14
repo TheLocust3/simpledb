@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "storage_engine.h"
+#include "lock_manager/lock_manager.h"
 #include "../log.h"
 #include "page_manager/page_manager.h"
 #include "btree/btree.h"
@@ -38,27 +39,34 @@ void engine_stop() {
 }
 
 void engine_insert(long key, long value) {
+    lock_manager_acquire(storage_engine->btree->pid);
     storage_engine->btree = btree_insert(storage_engine->btree, key, value);
 }
 
 void engine_delete(long key) {
+    lock_manager_acquire(storage_engine->btree->pid);
     storage_engine->btree = btree_delete(storage_engine->btree, key);
 }
 
 long engine_get(long key) {
+    lock_manager_acquire(storage_engine->btree->pid);
     return btree_get(storage_engine->btree, key);
 }
 
 void engine_dump() {
     printf("Dumping storage engine\n");
 
+    lock_manager_acquire(storage_engine->btree->pid);
+
     btree_print(storage_engine->btree);
 }
 
 long engine_size() {
+    lock_manager_acquire(storage_engine->btree->pid);
     return btree_size(storage_engine->btree);
 }
 
 long* engine_keys() {
+    lock_manager_acquire(storage_engine->btree->pid);
     return btree_keys(storage_engine->btree);
 }
