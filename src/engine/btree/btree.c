@@ -55,7 +55,8 @@ btree* btree_malloc() {
 void btree_free(btree* bt) {
     for (int i = 0; i < CHILDREN; i += 1) {
         if (!btm_is_child_null(bt, i)) {
-            btree_free(btm_get_child(bt, i));
+            btree* tmp = btm_get_child(bt, i);
+            btree_free(tmp);
         }
     }
 
@@ -408,13 +409,11 @@ btree* btree_insert_at_node(btree* bt, long key, long val) {
         if (is_key_at_empty(bt, i)) { // no more keys in this node, traverse down rightmost child
             btree* child = btm_get_child(bt, i);
             btree* tmp = btree_insert_helper(child, key, val);
-            btm_free(child);
             
             return tmp;
         } else if (key < bt->keys[i]) {
             btree* child = btm_get_child(bt, i);
             btree* tmp = btree_insert_helper(child, key, val);
-            btm_free(child);
 
             return tmp;
         }
@@ -422,7 +421,6 @@ btree* btree_insert_at_node(btree* bt, long key, long val) {
 
     btree* child = btm_get_child(bt, CHILDREN - 1);
     btree* tmp = btree_insert_helper(child, key, val);
-    btm_free(child);
 
     return tmp;
 }

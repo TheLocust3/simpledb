@@ -60,5 +60,5 @@ void btm_free(btree* bt) {
 
     lock_manager_release(bt->pid);
 
-    // free(bt);
+    free(bt);
 }
