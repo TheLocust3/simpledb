@@ -22,9 +22,13 @@ void lock_manager_stop() {
 }
 
 void lock_manager_add(page_id pid) {
-    assert(list->elements >= pid);
+    log_debug_level(2, "Adding lock for page: %ld\n", pid);
 
-    if (list->elements > pid) return; // we've already allocated a lock for this page
+    assert(pid <= list->elements);
+
+    if (list->elements > pid) { // we've already allocated a lock for this page
+        lock_list_reset(list, pid);
+    }
 
     list = lock_list_add(list);
 }
@@ -32,11 +36,11 @@ void lock_manager_add(page_id pid) {
 void lock_manager_acquire(page_id pid) {
     log_debug_level(2, "Acquiring lock on page: %ld\n", pid);
 
-    // pthread_mutex_lock(&lock);
+    pthread_mutex_lock(lock_list_get(list, pid));
 }
 
 void lock_manager_release(page_id pid) {
     log_debug_level(2, "Releasing lock on page: %ld\n", pid);
 
-    // pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(lock_list_get(list, pid));
 }

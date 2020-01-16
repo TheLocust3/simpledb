@@ -21,18 +21,21 @@ void engine_start(char* path) {
 
     lock_manager_init();
     storage_engine->btree = btree_malloc();
+    lock_manager_release(storage_engine->btree->pid);
 }
 
 // reset engine. For testing purposes
 void engine_reset() {
+    btree_free(storage_engine->btree);
+    storage_engine->page_counter = 0;
+
+    page_manager_reset();
+
     lock_manager_stop();
     lock_manager_init();
 
-    storage_engine->page_counter = 0;
-    btree_free(storage_engine->btree);
-
-    page_manager_reset();
     storage_engine->btree = btree_malloc();
+    lock_manager_release(storage_engine->btree->pid);
 }
 
 void engine_stop() {
@@ -46,18 +49,31 @@ void engine_stop() {
 }
 
 void engine_insert(long key, long value) {
-    lock_manager_acquire(storage_engine->btree->pid);
+    page_id root_pid = storage_engine->btree->pid;
+    lock_manager_acquire(root_pid);
+
     storage_engine->btree = btree_insert(storage_engine->btree, key, value);
+
+    lock_manager_release(root_pid);
 }
 
 void engine_delete(long key) {
-    lock_manager_acquire(storage_engine->btree->pid);
+    page_id root_pid = storage_engine->btree->pid;
+    lock_manager_acquire(root_pid);
+
     storage_engine->btree = btree_delete(storage_engine->btree, key);
+
+    lock_manager_release(root_pid);
 }
 
 long engine_get(long key) {
     lock_manager_acquire(storage_engine->btree->pid);
-    return btree_get(storage_engine->btree, key);
+
+    long out = btree_get(storage_engine->btree, key);
+
+    lock_manager_release(storage_engine->btree->pid);
+
+    return out;
 }
 
 void engine_dump() {
@@ -66,14 +82,26 @@ void engine_dump() {
     lock_manager_acquire(storage_engine->btree->pid);
 
     btree_print(storage_engine->btree);
+
+    lock_manager_release(storage_engine->btree->pid);
 }
 
 long engine_size() {
     lock_manager_acquire(storage_engine->btree->pid);
-    return btree_size(storage_engine->btree);
+
+    long out = btree_size(storage_engine->btree);
+
+    lock_manager_release(storage_engine->btree->pid);
+
+    return out;
 }
 
 long* engine_keys() {
     lock_manager_acquire(storage_engine->btree->pid);
-    return btree_keys(storage_engine->btree);
+
+    char* out = btree_keys(storage_engine->btree);
+
+    lock_manager_release(storage_engine->btree->pid);
+
+    return out;
 }

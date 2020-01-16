@@ -14,7 +14,8 @@ typedef struct lock_list {
 
 lock_list* lock_list_malloc();
 void lock_list_free(lock_list* list);
-pthread_mutex_t lock_list_get(lock_list* list, long pid);
+pthread_mutex_t* lock_list_get(lock_list* list, long pid);
 lock_list* lock_list_add(lock_list* list);
+void lock_list_reset(lock_list* list, long pid);
 
 #endif

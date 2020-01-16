@@ -9,11 +9,10 @@
 
 btree* btm_malloc() {
     page_id bt_pid = malloc_page();
+    lock_manager_add(bt_pid);
 
     btree* bt = get_page(bt_pid);
     bt->pid = bt_pid;
-    
-    lock_manager_add(bt_pid);
 
     return bt;
 }

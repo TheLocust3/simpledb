@@ -26,10 +26,10 @@ void lock_list_free(lock_list* list) {
     free(list);
 }
 
-pthread_mutex_t lock_list_get(lock_list* list, long pid) {
-    assert(pid > 0 && pid < list->size);
+pthread_mutex_t* lock_list_get(lock_list* list, long pid) {
+    assert(pid >= 0 && pid < list->elements);
 
-    return list->locks[pid];
+    return &(list->locks[pid]);
 }
 
 lock_list* lock_list_expand(lock_list* list) {
@@ -57,4 +57,11 @@ lock_list* lock_list_add(lock_list* list) {
     list->elements += 1;
 
     return list;
+}
+
+void lock_list_reset(lock_list* list, long pid) {
+    assert(pid >= 0 && pid < list->elements);
+
+    int rv = pthread_mutex_init(&list->locks[pid], NULL);
+    assert(rv == 0);
 }
