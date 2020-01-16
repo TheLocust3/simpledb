@@ -19,21 +19,20 @@ void engine_start(char* path) {
 
     page_manager_init(storage_engine, path);
 
-    storage_engine->btree = btree_malloc();
-
     lock_manager_init();
+    storage_engine->btree = btree_malloc();
 }
 
 // reset engine. For testing purposes
 void engine_reset() {
+    lock_manager_stop();
+    lock_manager_init();
+
     storage_engine->page_counter = 0;
     btree_free(storage_engine->btree);
 
     page_manager_reset();
     storage_engine->btree = btree_malloc();
-
-    lock_manager_stop();
-    lock_manager_init();
 }
 
 void engine_stop() {

@@ -5,6 +5,7 @@
 
 void lock_manager_init();
 void lock_manager_stop();
+void lock_manager_add(page_id pid);
 void lock_manager_acquire(page_id pid);
 void lock_manager_release(page_id pid);
 

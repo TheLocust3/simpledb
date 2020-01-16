@@ -12,6 +12,8 @@ btree* btm_malloc() {
 
     btree* bt = get_page(bt_pid);
     bt->pid = bt_pid;
+    
+    lock_manager_add(bt_pid);
 
     return bt;
 }
