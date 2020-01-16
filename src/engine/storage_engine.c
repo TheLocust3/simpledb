@@ -32,7 +32,8 @@ void engine_reset() {
     page_manager_reset();
     storage_engine->btree = btree_malloc();
 
-    lock_manager_reset();
+    lock_manager_stop();
+    lock_manager_init();
 }
 
 void engine_stop() {

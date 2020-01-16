@@ -2,24 +2,20 @@
 #include <assert.h>
 
 #include "lock_manager.h"
+#include "lock_list.h"
 #include "../../log.h"
 
-static pthread_mutex_t lock;
+static lock_list* list = NULL;
 
 void lock_manager_init() {
     log_debug("Initializing lock manager\n");
 
-    int rv = pthread_mutex_init(&lock, NULL);
-    assert(rv == 0);
-
-
-}
-
-void lock_manager_reset() {
-    log_debug("Reseting lock manager\n");
+    list = lock_list_malloc();
 }
 
 void lock_manager_stop() {
+    lock_list_free(list);
+
     log_debug("Lock manager stopped\n");
 }
 
