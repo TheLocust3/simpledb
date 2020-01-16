@@ -20,6 +20,8 @@ void engine_start(char* path) {
     page_manager_init(storage_engine, path);
 
     storage_engine->btree = btree_malloc();
+
+    lock_manager_init();
 }
 
 // reset engine. For testing purposes
@@ -29,13 +31,18 @@ void engine_reset() {
 
     page_manager_reset();
     storage_engine->btree = btree_malloc();
+
+    lock_manager_reset();
 }
 
 void engine_stop() {
-    log_info("Stopping storage engine\n");
-
     btree_free(storage_engine->btree);
+
+    lock_manager_stop();
+
     page_manager_stop();
+
+    log_info("Storage engine stopped\n");
 }
 
 void engine_insert(long key, long value) {

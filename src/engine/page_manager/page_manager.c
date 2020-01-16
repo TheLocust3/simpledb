@@ -13,12 +13,15 @@
 
 #include "page_manager.h"
 #include "linked_list.h"
+#include "../../log.h"
 
 static engine* storage_engine;
 static list* freelist;
 
 // initialize datafile
 void page_manager_init(engine* e, char* path) {
+    log_debug("Initializing page manager\n");
+
     assert(e->fd == -1);
 
     e->fd = open(path, O_RDWR | O_CREAT);
@@ -31,6 +34,8 @@ void page_manager_init(engine* e, char* path) {
 }
 
 void page_manager_reset() {
+    log_debug("Reseting page manager\n");
+
     cons_free(freelist);
     freelist = NULL;
 
@@ -47,6 +52,8 @@ void page_manager_stop() {
     assert(rv != -1);
 
     cons_free(freelist);
+
+    log_debug("Page manager stopped\n");
 }
 
 page_id malloc_page() {
