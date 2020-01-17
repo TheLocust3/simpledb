@@ -385,6 +385,7 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         btm_set_child(parent, i + 1, inserting_right_child);
 
         inserting_key = tmp_key;
+        lock_manager_release(inserting_left_child->pid);
         inserting_left_child = inserting_right_child;
         inserting_right_child = tmp_right_child;
     }
@@ -435,8 +436,10 @@ btree* btree_insert_helper(btree* bt, long key, long val) {
 
     if (tmp == NULL) {
         btm_flush(bt);
+        lock_manager_release(bt->pid);
     } else {
         btm_flush(tmp);
+        lock_manager_release(tmp->pid);
     }
 
     return tmp;
