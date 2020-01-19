@@ -385,7 +385,7 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         btm_set_child(parent, i + 1, inserting_right_child);
 
         inserting_key = tmp_key;
-        lock_manager_release(inserting_left_child->pid);
+        btm_free(inserting_left_child);
         inserting_left_child = inserting_right_child;
         inserting_right_child = tmp_right_child;
     }
