@@ -9,7 +9,7 @@
 
 static engine* storage_engine;
 
-void engine_start(char* path) {
+engine* engine_start(char* path) {
     log_info("Starting storage engine with file backing `%s`\n", path);
 
     storage_engine = malloc(sizeof(engine));
@@ -22,6 +22,8 @@ void engine_start(char* path) {
     lock_manager_init();
     storage_engine->btree = btree_malloc();
     lock_manager_release(storage_engine->btree->pid);
+
+    return storage_engine;
 }
 
 // reset engine. For testing purposes

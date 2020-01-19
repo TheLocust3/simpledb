@@ -9,7 +9,7 @@ typedef struct engine {
     long page_counter;
 } engine;
 
-void engine_start(char* path);
+engine* engine_start(char* path);
 void engine_reset();
 void engine_stop();
 
