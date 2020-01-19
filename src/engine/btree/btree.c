@@ -649,8 +649,10 @@ btree* btree_delete_helper(btree* bt, long key) {
 
     if (tmp == NULL) {
         btm_flush(bt);
+        lock_manager_release(bt->pid);
     } else {
         btm_flush(tmp);
+        lock_manager_release(tmp->pid);
     }
 
     return tmp;

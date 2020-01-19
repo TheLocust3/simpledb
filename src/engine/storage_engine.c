@@ -99,7 +99,7 @@ long engine_size() {
 long* engine_keys() {
     lock_manager_acquire(storage_engine->btree->pid);
 
-    char* out = btree_keys(storage_engine->btree);
+    long* out = btree_keys(storage_engine->btree);
 
     lock_manager_release(storage_engine->btree->pid);
 
