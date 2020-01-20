@@ -1,11 +1,19 @@
 #include <stdio.h>
 
+#include "database_test.h"
 #include "engine_test.h"
 
 int main(int argc, char* argv[]) {
-    printf("Running tests\n");
+    printf("Running all tests\n\n");
+
+    printf("\n");
+    database_test();
+
+    printf("\n\n");
 
     engine_test();
+
+    printf("\n\nALL TESTS PASSED\n");
     
     return 0;
 }

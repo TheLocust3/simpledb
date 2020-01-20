@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "engine_test.h"
 #include "../src/engine/storage_engine.h"
 #include "helpers.h"
 
@@ -221,4 +222,6 @@ void engine_test() {
     }
 
     engine_stop();
+
+    printf("Storage engine tests passed\n");
 }
