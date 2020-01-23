@@ -155,7 +155,7 @@ void engine_test() {
     time_t t;
     srand((unsigned) time(&t));
 
-    engine_start("test.db");
+    engine_start("test2.db");
 
     for (int i = 0; i < REPEAT; i += 1) {
         start_timer();

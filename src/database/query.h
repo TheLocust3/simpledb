@@ -24,4 +24,6 @@ typedef struct query_response {
     long val;
 } query_response;
 
+void query_print(query_request q);
+
 #endif

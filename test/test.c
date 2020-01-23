@@ -4,9 +4,8 @@
 #include "engine_test.h"
 
 int main(int argc, char* argv[]) {
-    printf("Running all tests\n\n");
+    printf("Running all tests\n\n\n");
 
-    printf("\n");
     database_test();
 
     printf("\n\n");

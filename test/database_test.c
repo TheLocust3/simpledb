@@ -11,5 +11,9 @@
 void database_test() {
     printf("Running full database tests\n");
 
+    database_initialize("test1.db");
+
+    database_stop();
+
     printf("Full database tests passed\n");
 }
