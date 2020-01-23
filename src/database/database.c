@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "database.h"
+#include "../engine/storage_engine.h"
 #include "../log.h"
 
 static database* d;
@@ -33,28 +34,34 @@ void database_stop() {
 }
 
 query_response database_query_read(query_request q) {
+    long val = engine_get(q.key);
+
     query_response res;
     res.op = q.op;
     res.code = RESPONSE_SUCCESS;
-    res.val = 0;
+    res.val = val;
 
     return res;
 }
 
 query_response database_query_write(query_request q) {
+    engine_insert(q.key, q.val);
+
     query_response res;
     res.op = q.op;
     res.code = RESPONSE_SUCCESS;
-    res.val = 0;
+    res.val = -1;
 
     return res;
 }
 
 query_response database_query_remove(query_request q) {
+    engine_delete(q.key);
+
     query_response res;
     res.op = q.op;
     res.code = RESPONSE_SUCCESS;
-    res.val = 0;
+    res.val = -1;
 
     return res;
 }
