@@ -13,7 +13,6 @@ void database_test() {
     printf("Running full database tests\n\n");
 
     database_initialize("test1.db");
-
     printf("\n");
 
     query_request write;
@@ -48,7 +47,6 @@ void database_test() {
     assert(res.val == -1);
 
     printf("\n");
-
     database_stop();
 
     printf("\nFull database tests passed\n");
