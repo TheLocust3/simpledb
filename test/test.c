@@ -7,7 +7,7 @@
 int main(int argc, char* argv[]) {
     printf("Running all tests\n\n\n");
 
-    database_test();
+    // database_test();
 
     printf("\n\n");
 
@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 
     printf("\n\n");
 
-    engine_test();
+    // engine_test();
 
     printf("\n\nALL TESTS PASSED\n");
     

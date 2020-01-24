@@ -6,11 +6,11 @@
 
 void query_print(query_request q) {
     if (q.op == QUERY_READ) {
-        log_info("READ %ld\n", q.key);
+        log_info("%ld: READ %ld\n", q.id, q.key);
     } else if (q.op == QUERY_WRITE) {
-        log_info("WRITE %ld %d\n", q.key, q.val);
+        log_info("%ld: WRITE %ld %d\n", q.id, q.key, q.val);
     } else if (q.op == QUERY_REMOVE) {
-        log_info("REMOVE %ld\n", q.key);
+        log_info("%ld: REMOVE %ld\n", q.id, q.key);
     } else {
         printf("Bad query operation %d received\n", q.op);
         abort();
