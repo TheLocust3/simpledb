@@ -7,10 +7,11 @@
 #include "parallelism_test.h"
 #include "../src/database/database.h"
 #include "../src/database/query.h"
+#include "../src/engine/storage_engine.h"
 #include "helpers.h"
 
-#define PARALLELISM 5
-#define INSERTS 10
+#define PARALLELISM 1
+#define INSERTS 6
 
 void* insert_thread() {
     printf("Starting insert thread\n");
@@ -47,6 +48,8 @@ void parallelism_test() {
     for (int i = 0; i < PARALLELISM; i += 1) {
         pthread_join(thread[i], NULL);
     }
+
+    engine_dump();
 
     printf("\n");
     database_stop();

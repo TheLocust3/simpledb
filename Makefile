@@ -17,7 +17,7 @@ testdb: $(TEST_OBJS)
 .PHONY: clean
 
 clean:
-	rm -f db $(OBJS) $(TEST_OBJS) *.db
+	rm -f db testdb $(OBJS) $(TEST_OBJS) *.db
 
 .PHONY: test
 

@@ -47,6 +47,9 @@ void engine_stop() {
 
     page_manager_stop();
 
+    free(storage_engine);
+    storage_engine = NULL;
+
     log_info("Storage engine stopped\n");
 }
 

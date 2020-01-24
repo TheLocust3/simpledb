@@ -1,31 +1,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "database/database.h"
 #include "engine/storage_engine.h"
 
 int main(int argc, char* argv[]) {
-    engine_start("test.db");
+    database_initialize("test.db");
 
-    engine_insert(12, 64);
-    engine_insert(74, 63);
-    engine_insert(19, 37);
-    engine_insert(94, 22);
-    engine_insert(1, 74);
-    engine_insert(66, 70);
-    engine_insert(93, 37);
-    engine_insert(88, 41);
-    engine_insert(59, 98);
-    engine_insert(13, 48);
+    query_request write;
+    write.op = QUERY_WRITE;
 
-    engine_delete(12);
-    engine_delete(74);
-    engine_delete(19);
-    engine_delete(94);
-    engine_delete(1);
+    query_response res;
+
+    write.key = 94;
+    write.val = 59;
+    res = database_query(write);
+
+    write.key = 44;
+    write.val = 28;
+    res = database_query(write);
+
+    write.key = 42;
+    write.val = 8;
+    res = database_query(write);
+
+    write.key = 24;
+    write.val = 53;
+    res = database_query(write);
+
+    write.key = 7;
+    write.val = 38;
+    res = database_query(write);
+
+    write.key = 52;
+    write.val = 57;
+    res = database_query(write);
+
+    write.key = 82;
+    write.val = 35;
+    res = database_query(write);
+
+    write.key = 33;
+    write.val = 94;
+    res = database_query(write);
+
+    write.key = 61;
+    write.val = 30;
+    res = database_query(write);
+
+    write.key = 14;
+    write.val = 24;
+    res = database_query(write);
 
     engine_dump();
 
-    engine_stop();
+    database_stop();
 
     return 0;
 }

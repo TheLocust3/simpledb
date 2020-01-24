@@ -17,6 +17,7 @@ void lock_manager_init() {
 
 void lock_manager_stop() {
     lock_list_free(list);
+    list = NULL;
 
     log_debug("Lock manager stopped\n");
 }

@@ -30,6 +30,9 @@ void database_stop() {
 
     engine_stop();
 
+    free(d);
+    d = NULL;
+
     log_info("Database stopped\n");
 }
 

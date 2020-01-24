@@ -52,6 +52,9 @@ void page_manager_stop() {
     assert(rv != -1);
 
     cons_free(freelist);
+    freelist = NULL;
+
+    storage_engine = NULL;
 
     log_debug("Page manager stopped\n");
 }
