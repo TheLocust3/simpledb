@@ -3,10 +3,14 @@
 
 #include "../page_manager/page_manager.h"
 
+#define LOCK_LIST 1
+
 void lock_manager_init();
 void lock_manager_stop();
 void lock_manager_add(page_id pid);
 void lock_manager_acquire(page_id pid);
+void lock_manager_acquire_special(int lock_id);
 void lock_manager_release(page_id pid);
+void lock_manager_release_special(int lock_id);
 
 #endif
