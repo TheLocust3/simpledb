@@ -14,7 +14,6 @@ typedef unsigned short response_code;
 
 typedef struct query_request {
     operation op;
-    long id;
     long key;
     long val;
 } query_request;
@@ -22,7 +21,6 @@ typedef struct query_request {
 typedef struct query_response {
     operation op;
     response_code code;
-    long id;
     long val;
 } query_response;
 

@@ -31,7 +31,6 @@ void* insert_thread(void* void_args) {
 
     query_request write;
     write.op = QUERY_WRITE;
-    write.id = args->id;
 
     for (int i = 0; i < INSERTS; i += 1) {
         if (OVERRIDE) {
