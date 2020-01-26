@@ -16,7 +16,11 @@ void log_debug_level(int level, const char* format, ...) {
     va_start(args, format);
 
     char with_id[256];
-    sprintf(with_id, "[%d] %s", thread_id, format);
+    if (thread_id >= 0) {
+        sprintf(with_id, "[DEBUG-%d  %d] %s", level, thread_id, format);
+    } else {
+        sprintf(with_id, "[DEBUG-%d %d] %s", level, thread_id, format);
+    }
 
     vprintf(with_id, args);
 
@@ -30,7 +34,11 @@ void log_debug(const char* format, ...) {
     va_start(args, format);
 
     char with_id[256];
-    sprintf(with_id, "[%d] %s", thread_id, format);
+    if (thread_id >= 0) {
+        sprintf(with_id, "[DEBUG    %d] %s", thread_id, format);
+    } else {
+        sprintf(with_id, "[DEBUG   %d] %s", thread_id, format);
+    }
 
     vprintf(with_id, args);
 
@@ -42,7 +50,11 @@ void log_info(const char* format, ...) {
     va_start(args, format);
 
     char with_id[256];
-    sprintf(with_id, "[%d] %s", thread_id, format);
+    if (thread_id >= 0) {
+        sprintf(with_id, "[INFO     %d] %s", thread_id, format);
+    } else {
+        sprintf(with_id, "[INFO    %d] %s", thread_id, format);
+    }
 
     vprintf(with_id, args);
 
@@ -54,7 +66,11 @@ void log_error(const char* format, ...) {
     va_start(args, format);
 
     char with_id[256];
-    sprintf(with_id, "[%d] %s", thread_id, format);
+    if (thread_id >= 0) {
+        sprintf(with_id, "[ERROR    %d] %s", thread_id, format);
+    } else {
+        sprintf(with_id, "[ERROR   %d] %s", thread_id, format);
+    }
 
     vprintf(with_id, args);
 
