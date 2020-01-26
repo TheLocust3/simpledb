@@ -10,7 +10,7 @@
 static engine* storage_engine;
 
 engine* engine_start(char* path) {
-    log_info("Starting storage engine with file backing `%s`\n", path);
+    log_info("[ENGINE]: Starting with file backing `%s`\n", path);
 
     storage_engine = malloc(sizeof(engine));
 
@@ -50,7 +50,7 @@ void engine_stop() {
     free(storage_engine);
     storage_engine = NULL;
 
-    log_info("Storage engine stopped\n");
+    log_info("[ENGINE]: Stopped\n");
 }
 
 void engine_insert(long key, long value) {
@@ -82,7 +82,7 @@ long engine_get(long key) {
 }
 
 void engine_dump() {
-    printf("Dumping storage engine\n");
+    log_info("Dumping storage engine\n");
 
     lock_manager_acquire(storage_engine->btree->pid);
 

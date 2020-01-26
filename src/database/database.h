@@ -9,6 +9,7 @@ typedef struct database {
 } database;
 
 void database_initialize(char* path);
+void database_thread_initialize(int id);
 void database_start(char* path);
 void database_stop();
 

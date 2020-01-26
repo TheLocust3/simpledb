@@ -27,6 +27,8 @@ void* insert_thread(void* void_args) {
 
     printf("Starting insert thread %d\n", args->id);
 
+    database_thread_initialize(args->id);
+
     query_request write;
     write.op = QUERY_WRITE;
     write.id = args->id;

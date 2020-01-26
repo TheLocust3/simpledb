@@ -20,7 +20,7 @@ static list* freelist;
 
 // initialize datafile
 void page_manager_init(engine* e, char* path) {
-    log_debug("Initializing page manager\n");
+    log_debug("[PAGE_MANAGER]: Initializing\n");
 
     assert(e->fd == -1);
 
@@ -34,7 +34,7 @@ void page_manager_init(engine* e, char* path) {
 }
 
 void page_manager_reset() {
-    log_debug("Reseting page manager\n");
+    log_debug("[PAGE_MANAGER]: Reseting\n");
 
     cons_free(freelist);
     freelist = NULL;
@@ -56,7 +56,7 @@ void page_manager_stop() {
 
     storage_engine = NULL;
 
-    log_debug("Page manager stopped\n");
+    log_debug("[PAGE_MANAGER]: Stopped\n");
 }
 
 page_id malloc_page() {

@@ -8,7 +8,7 @@
 static database* d;
 
 void database_initialize(char* path) {
-    log_info("Initializing new database with file backing `%s`\n", path);
+    log_info("[DATABASE]: Initializing new database with file backing `%s`\n", path);
 
     // TODO: ensure file is truncated
 
@@ -16,8 +16,14 @@ void database_initialize(char* path) {
     d->sengine = engine_start(path);
 }
 
+void database_thread_initialize(int id) {
+    log_info("[DATABASE]: Initializing new database thread with id %d\n", id);
+
+    log_init(id);
+}
+
 void database_start(char* path) {
-    log_info("Starting database with file backing `%s`\n", path);
+    log_info("[DATABASE]: Starting database with file backing `%s`\n", path);
 
     // TODO: ensure file exists
 
@@ -26,14 +32,14 @@ void database_start(char* path) {
 }
 
 void database_stop() {
-    log_info("Stopping database...\n");
+    log_info("[DATABASE]: Stopping database...\n");
 
     engine_stop();
 
     free(d);
     d = NULL;
 
-    log_info("Database stopped\n");
+    log_info("[DATABASE]: Database stopped\n");
 }
 
 query_response database_query_read(query_request q) {
@@ -79,7 +85,7 @@ query_response database_query(query_request q) {
     } else if (q.op == QUERY_REMOVE) {
         return database_query_remove(q);
     } else {
-        printf("Bad query operation %d received\n", q.op);
+        log_error("Bad query operation %d received\n", q.op);
         abort();
     }
 }
