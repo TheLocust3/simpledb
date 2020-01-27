@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "lock_list.h"
+#include "../../log.h"
 
 lock_list* lock_list_new(long size) {
     lock_list* list = malloc(sizeof(lock_list));
@@ -27,7 +27,7 @@ void lock_list_free(lock_list* list) {
 }
 
 pthread_mutex_t* lock_list_get(lock_list* list, long pid) {
-    assert(pid >= 0 && pid < list->elements);
+    assert(pid >= 0 && pid < list->elements, "lock_list_get: pid >= 0 && pid < list->elements");
 
     return &(list->locks[pid]);
 }
@@ -52,7 +52,7 @@ lock_list* lock_list_add(lock_list* list) {
     }
 
     int rv = pthread_mutex_init(&list->locks[list->elements], NULL);
-    assert(rv == 0);
+    assert(rv == 0, "lock_list_add: rv == 0");
 
     list->elements += 1;
 
@@ -60,8 +60,8 @@ lock_list* lock_list_add(lock_list* list) {
 }
 
 void lock_list_reset(lock_list* list, long pid) {
-    assert(pid >= 0 && pid < list->elements);
+    assert(pid >= 0 && pid < list->elements, "lock_list_reset: pid >= 0 && pid < list->elements");
 
     int rv = pthread_mutex_init(&list->locks[pid], NULL);
-    assert(rv == 0);
+    assert(rv == 0, "lock_list_reset: rv == 0");
 }

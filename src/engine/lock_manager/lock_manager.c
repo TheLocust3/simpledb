@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <assert.h>
 
 #include "lock_manager.h"
 #include "lock_list.h"
@@ -31,7 +30,7 @@ void lock_manager_stop() {
 void lock_manager_add(page_id pid) {
     log_debug_level(2, "[LOCK_MANAGER]: Adding lock for page: %ld\n", pid);
 
-    assert(pid <= list->elements);
+    assert(pid <= list->elements, "lock_manager_add: pid <= list->elements");
 
     lock_manager_acquire_special(LOCK_LIST);
 
@@ -51,7 +50,7 @@ void lock_manager_acquire(page_id pid) {
 }
 
 void lock_manager_acquire_special(int lock_id) {
-    log_debug_level(2, "[LOCK_MANAGER]: Acquiring special lock: %d\n", lock_id);
+    log_debug_level(3, "[LOCK_MANAGER]: Acquiring special lock: %d\n", lock_id);
 
     pthread_mutex_lock(lock_list_get(special, lock_id));
 }
@@ -63,7 +62,7 @@ void lock_manager_release(page_id pid) {
 }
 
 void lock_manager_release_special(int lock_id) {
-    log_debug_level(2, "[LOCK_MANAGER]: Releasing special lock: %d\n", lock_id);
+    log_debug_level(3, "[LOCK_MANAGER]: Releasing special lock: %d\n", lock_id);
 
     pthread_mutex_unlock(lock_list_get(special, lock_id));
 }

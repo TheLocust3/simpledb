@@ -7,7 +7,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <assert.h>
 #include <time.h>
 #include <string.h>
 
@@ -22,13 +21,13 @@ static list* freelist;
 void page_manager_init(engine* e, char* path) {
     log_debug("[PAGE_MANAGER]: Initializing\n");
 
-    assert(e->fd == -1);
+    assert(e->fd == -1, "page_manager_init: e->fd == -1");
 
     e->fd = open(path, O_RDWR | O_CREAT);
-    assert(e->fd != -1);
+    assert(e->fd != -1, "page_manager_init: e->fd != -1");
 
     long off = lseek(e->fd, 0, SEEK_SET);
-    assert(off == 0);
+    assert(off == 0, "page_manager_init: off == 0");
 
     storage_engine = e;
 }
@@ -40,16 +39,16 @@ void page_manager_reset() {
     freelist = NULL;
 
     int rv = ftruncate(storage_engine->fd, 0);
-    assert(rv != -1);
+    assert(rv != -1, "page_manager_reset: rv != -1");
 
     long off = lseek(storage_engine->fd, 0, SEEK_SET);
-    assert(off == 0);
+    assert(off == 0, "page_manager_reset: off == 0");
 }
 
 // flush all pages to disk
 void page_manager_stop() {
     int rv = close(storage_engine->fd);
-    assert(rv != -1);
+    assert(rv != -1, "page_manager_stop: rv != -1");
 
     cons_free(freelist);
     freelist = NULL;
@@ -89,12 +88,12 @@ void* get_page(page_id pid) {
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
-    assert(off == loc); // ensure file offset is correct
+    assert(off == loc, "get_page: off == loc"); // ensure file offset is correct
 
     void* page = malloc(IN_MEMORY_PAGE_SIZE);
 
     ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
-    assert(size == PAGE_SIZE);
+    assert(size == PAGE_SIZE, "get_page: size == PAGE_SIZE");
 
     return page;
 }
@@ -105,10 +104,10 @@ void flush_page(page_id pid, void* page) {
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
-    assert(off == loc);
+    assert(off == loc, "flush_page: off == loc");
 
     int rv = write(storage_engine->fd, page, PAGE_SIZE);
-    assert(rv != -1);
+    assert(rv != -1, "flush_page: rv != -1");
 }
 
 void free_page(page_id pid) {

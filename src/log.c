@@ -9,6 +9,12 @@ void log_init(int id) {
     thread_id = id;
 }
 
+void assert(bool assertion, const char* failed_msg) {
+    if (!assertion) {
+        log_error("[GLOBAL] Assertion failed: %s\n", failed_msg);
+    }
+}
+
 void log_debug_level(int level, const char* format, ...) {
     if (level > DEBUG) return;
 

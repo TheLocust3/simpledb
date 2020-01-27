@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../../log.h"
 #include "../lock_manager/lock_manager.h"
 #include "../btree/btree_manager.h"
 #include "../page_manager/page_manager.h"
@@ -46,10 +47,14 @@ void btm_set_child_by_child(btree* bt, int child_idx, btree* new_bt, int new_chi
 }
 
 void btm_flush(btree* bt) {
+    log_debug_level(2, "[BTREE_MANAGER]: Flushing btree: %ld\n", bt->pid);
+
     flush_page(bt->pid, bt);
 }
 
 void btm_delete(btree* bt) {
+    log_debug_level(2, "[BTREE_MANAGER]: Deleting btree: %ld\n", bt->pid);
+
     free_page(bt->pid);
     btm_free(bt);
 
@@ -58,6 +63,8 @@ void btm_delete(btree* bt) {
 
 void btm_free(btree* bt) {
     if (bt == NULL) return;
+
+    log_debug_level(2, "[BTREE_MANAGER]: Freeing btree: %ld\n", bt->pid);
 
     free(bt);
     lock_manager_release(bt->pid);
