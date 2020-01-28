@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "page_manager.h"
+#include "../lock_manager/lock_manager.h"
 #include "linked_list.h"
 #include "../../log.h"
 
@@ -59,6 +60,8 @@ void page_manager_stop() {
 }
 
 page_id malloc_page() {
+    lock_manager_acquire_special(FILE_LOCK);
+    
     page_id pid = storage_engine->page_counter;
     if (freelist != NULL) { // assign pid to be one of the free slots
         pid = freelist->car;
@@ -74,6 +77,8 @@ page_id malloc_page() {
     if (!page_cache_add(pid, page)) { // no more space in the cache, free and move on
         free(page);
     }
+
+    lock_manager_release_special(FILE_LOCK);
 
     return pid;
 }
@@ -111,8 +116,12 @@ void flush_page(page_id pid, void* page) {
 }
 
 void free_page(page_id pid) {
+    lock_manager_acquire_special(FILE_LOCK);
+
     // add page_id to freelist so new mallocs can overwrite memory
     freelist = cons(pid, freelist);
 
     page_cache_remove(pid);
+
+    lock_manager_release_special(FILE_LOCK);
 }

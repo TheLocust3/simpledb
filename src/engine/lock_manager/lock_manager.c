@@ -15,6 +15,7 @@ void lock_manager_init() {
 
     special = lock_list_malloc();
     special = lock_list_add(special); // lock list
+    special = lock_list_add(special); // file
 }
 
 void lock_manager_stop() {
@@ -32,7 +33,7 @@ void lock_manager_add(page_id pid) {
 
     assert(pid <= list->elements, "lock_manager_add: pid <= list->elements");
 
-    lock_manager_acquire_special(LOCK_LIST);
+    lock_manager_acquire_special(LOCK_LIST_LOCK);
 
     if (list->elements > pid) { // we've already allocated a lock for this page
         lock_list_reset(list, pid);
@@ -40,7 +41,7 @@ void lock_manager_add(page_id pid) {
 
     list = lock_list_add(list);
 
-    lock_manager_release_special(LOCK_LIST);
+    lock_manager_release_special(LOCK_LIST_LOCK);
 }
 
 void lock_manager_acquire(page_id pid) {

@@ -255,6 +255,8 @@ btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
 }
 
 btree* btree_split_node(btree* bt, long rightmost_key, btree* rightmost_right_child) {
+    log_debug_level(3, "[BTREE]: Splitting node: %ld\n", bt->pid);
+
     int split_index = NODES / 2 + 1;
     long split_key = bt->keys[split_index];
 
@@ -344,7 +346,7 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         return NULL;
     }
 
-    log_debug_level(3, "[BTREE]: Splitting node: %ld with parent: %ld\n", maybe_split->pid, parent->pid);
+    log_debug_level(3, "[BTREE]: Handling split node: %ld with parent: %ld\n", maybe_split->pid, parent->pid);
 
     int insert_at = -1;
     long inserting_key = maybe_split->keys[0];

@@ -3,7 +3,8 @@
 
 #include "../page_manager/page_manager.h"
 
-#define LOCK_LIST 0
+#define LOCK_LIST_LOCK 0
+#define FILE_LOCK 1
 
 void lock_manager_init();
 void lock_manager_stop();

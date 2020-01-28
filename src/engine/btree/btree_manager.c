@@ -9,6 +9,8 @@
 #include "../page_manager/page_manager.h"
 
 btree* btm_malloc() {
+    log_debug_level(2, "[BTREE_MANAGER]: Allocating new node\n");
+
     page_id bt_pid = malloc_page();
     lock_manager_add(bt_pid);
 
@@ -57,8 +59,6 @@ void btm_delete(btree* bt) {
 
     free_page(bt->pid);
     btm_free(bt);
-
-    lock_manager_release(bt->pid);
 }
 
 void btm_free(btree* bt) {
