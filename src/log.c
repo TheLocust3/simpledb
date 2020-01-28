@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 #include "log.h"
@@ -12,6 +13,7 @@ void log_init(int id) {
 void assert(bool assertion, const char* failed_msg) {
     if (!assertion) {
         log_error("[GLOBAL] Assertion failed: %s\n", failed_msg);
+        abort();
     }
 }
 

@@ -219,6 +219,8 @@ long btree_get(btree* bt, long key) {
 }
 
 btree* btree_split_leaf(btree* bt, long rightmost_key, long rightmost_val) {
+    log_debug_level(3, "[BTREE]: Splitting leaf: %ld\n", bt->pid);
+
     int split_index = NODES / 2 + 1;
     long split_key = bt->keys[split_index];
 
@@ -341,6 +343,8 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
     if (maybe_split == NULL) {
         return NULL;
     }
+
+    log_debug_level(3, "[BTREE]: Splitting node: %ld with parent: %ld\n", maybe_split->pid, parent->pid);
 
     int insert_at = -1;
     long inserting_key = maybe_split->keys[0];
@@ -498,6 +502,8 @@ long first_key(btree* bt) {
 }
 
 btree* btree_merge(btree* left, btree* right) {
+    log_debug_level(3, "[BTREE]: Merging left: %ld and right: \n", left->pid, right->pid);
+
     int left_size = node_size(left);
     if (left_size == 0) { // merging right into an empty leaf
         return right;

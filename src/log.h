@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define DEBUG 2
+#define DEBUG 3
 
 void log_init(int id);
 void assert(bool assertion, const char* failed_msg);
