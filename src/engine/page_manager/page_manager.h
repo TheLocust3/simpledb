@@ -2,12 +2,12 @@
 #define PAGE_MANAGER_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "../btree/btree.h"
 #include "page_cache.h"
 
 static const size_t PAGE_SIZE = sizeof(btree);
-static const size_t IN_MEMORY_PAGE_SIZE = sizeof(page_node) + PAGE_SIZE;
 
 #include "../storage_engine.h"
 
@@ -17,6 +17,7 @@ void page_manager_init(engine* e, char* path);
 void page_manager_reset();
 void page_manager_stop();
 
+bool is_valid_page_id(page_id pid);
 page_id malloc_page();
 void* get_page(page_id pid);
 void flush_page(page_id pid, void* page);

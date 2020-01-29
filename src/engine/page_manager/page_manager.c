@@ -59,6 +59,10 @@ void page_manager_stop() {
     log_debug("[PAGE_MANAGER]: Stopped\n");
 }
 
+bool is_valid_page_id(page_id pid) {
+    return pid == -1 || (pid >= 0 && pid <= storage_engine->page_counter);
+}
+
 page_id malloc_page() {
     lock_manager_acquire_special(FILE_LOCK);
     
@@ -70,13 +74,9 @@ page_id malloc_page() {
         storage_engine->page_counter += 1;
     }
 
-    void* page = malloc(IN_MEMORY_PAGE_SIZE);
-    memset(page, 0, IN_MEMORY_PAGE_SIZE);
+    void* page = malloc(PAGE_SIZE);
+    memset(page, 0, PAGE_SIZE);
     flush_page(pid, page);
-
-    if (!page_cache_add(pid, page)) { // no more space in the cache, free and move on
-        free(page);
-    }
 
     lock_manager_release_special(FILE_LOCK);
 
@@ -85,17 +85,12 @@ page_id malloc_page() {
 
 // given page_id, check if we have a cached page otherwise convert the id into a location on disk
 void* get_page(page_id pid) {
-    // void* cached_page = page_cache_get(pid);
-    // if (cached_page != NULL) {
-        // return cached_page;
-    // }
-
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
     assert(off == loc, "get_page: off == loc"); // ensure file offset is correct
 
-    void* page = malloc(IN_MEMORY_PAGE_SIZE);
+    void* page = malloc(PAGE_SIZE);
 
     ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
     assert(size == PAGE_SIZE, "get_page: size == PAGE_SIZE");
@@ -120,8 +115,6 @@ void free_page(page_id pid) {
 
     // add page_id to freelist so new mallocs can overwrite memory
     freelist = cons(pid, freelist);
-
-    page_cache_remove(pid);
 
     lock_manager_release_special(FILE_LOCK);
 }
