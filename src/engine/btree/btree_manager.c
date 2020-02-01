@@ -9,13 +9,14 @@
 #include "../page_manager/page_manager.h"
 
 btree* btm_malloc() {
-    log_debug_level(2, "[BTREE_MANAGER]: Allocating new node\n");
 
     page_id bt_pid = malloc_page();
     lock_manager_add(bt_pid);
 
     btree* bt = get_page(bt_pid);
     bt->pid = bt_pid;
+
+    log_debug_level(2, "[BTREE_MANAGER]: Allocated new node at %ld\n", bt->pid);
 
     return bt;
 }
@@ -26,6 +27,7 @@ bool btm_is_child_null(btree* bt, int child_idx) {
 
 btree* btm_get_child(btree* bt, int child_idx) {
     page_id child_pid = bt->children[child_idx];
+    log_debug_level(2, "[BTREE_MANAGER]: Getting child: %ld of parent: %ld\n", child_pid, bt->pid);
 
     if (child_pid == -1) {
         return NULL;
@@ -68,10 +70,11 @@ void btm_delete(btree* bt) {
 void btm_free(btree* bt) {
     if (bt == NULL) return;
 
-    assert(bt->pid >= 0, "btm_free: bt->pid >= 0");
+    long pid = bt->pid;
+    assert(pid >= 0, "btm_free: bt->pid >= 0");
 
-    log_debug_level(2, "[BTREE_MANAGER]: Freeing btree: %ld\n", bt->pid);
+    log_debug_level(2, "[BTREE_MANAGER]: Freeing btree: %ld\n", pid);
 
     free(bt);
-    lock_manager_release(bt->pid);
+    lock_manager_release(pid);
 }
