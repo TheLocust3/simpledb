@@ -9,7 +9,6 @@
 #include "../page_manager/page_manager.h"
 
 btree* btm_malloc() {
-
     page_id bt_pid = malloc_page();
     lock_manager_add(bt_pid);
 

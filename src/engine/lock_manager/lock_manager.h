@@ -5,6 +5,7 @@
 
 #define LOCK_LIST_LOCK 0
 #define FILE_LOCK 1
+#define GLOBAL_LOCK 2 // USED FOR TESTING PURPOSES ONLY
 
 void lock_manager_init();
 void lock_manager_stop();

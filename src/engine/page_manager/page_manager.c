@@ -85,6 +85,8 @@ page_id malloc_page() {
 
 // given page_id, check if we have a cached page otherwise convert the id into a location on disk
 void* get_page(page_id pid) {
+    lock_manager_acquire_special(FILE_LOCK);
+
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);
@@ -95,12 +97,12 @@ void* get_page(page_id pid) {
     ssize_t size = read(storage_engine->fd, page, PAGE_SIZE);
     assert(size == PAGE_SIZE, "get_page: size == PAGE_SIZE");
 
+    lock_manager_release_special(FILE_LOCK);
+
     return page;
 }
 
 void flush_page(page_id pid, void* page) {
-    // TODO: remove page from cache/give user the option to save it
-
     long loc = pid * PAGE_SIZE;
 
     long off = lseek(storage_engine->fd, loc, SEEK_SET);

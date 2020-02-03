@@ -396,10 +396,11 @@ btree* btree_node_split_handler(btree* parent, btree* maybe_split) {
         inserting_right_child = tmp_right_child;
     }
 
+    long key = maybe_split->keys[0];
     btm_delete(maybe_split); // free the parent node that we didn't use
 
     // we couldn't find a good spot to insert at so let's split the parent and propagate the split
-    if (insert_at == -1 || inserting_key != maybe_split->keys[0]) {
+    if (insert_at == -1 || inserting_key != key) {
         btree* tmp = btree_split_node(parent, inserting_key, inserting_right_child);
 
         btm_free(inserting_right_child);

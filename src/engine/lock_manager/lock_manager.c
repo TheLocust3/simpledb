@@ -4,7 +4,6 @@
 #include "lock_list.h"
 #include "../../log.h"
 
-
 static lock_list* list = NULL;
 static lock_list* special = NULL;
 
@@ -16,6 +15,7 @@ void lock_manager_init() {
     special = lock_list_malloc();
     special = lock_list_add(special); // lock list
     special = lock_list_add(special); // file
+    special = lock_list_add(special); // global
 }
 
 void lock_manager_stop() {
@@ -48,12 +48,16 @@ void lock_manager_acquire(page_id pid) {
     log_debug_level(2, "[LOCK_MANAGER]: Acquiring lock on page: %ld\n", pid);
 
     pthread_mutex_lock(lock_list_get(list, pid));
+
+    log_debug_level(3, "[LOCK_MANAGER]: Successfully acquired lock on page: %ld\n", pid);
 }
 
 void lock_manager_acquire_special(int lock_id) {
     log_debug_level(3, "[LOCK_MANAGER]: Acquiring special lock: %d\n", lock_id);
 
     pthread_mutex_lock(lock_list_get(special, lock_id));
+
+    log_debug_level(4, "[LOCK_MANAGER]: Successfully acquired special lock: %d\n", lock_id);
 }
 
 void lock_manager_release(page_id pid) {

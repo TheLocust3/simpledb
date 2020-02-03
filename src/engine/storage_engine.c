@@ -54,21 +54,29 @@ void engine_stop() {
 }
 
 void engine_insert(long key, long value) {
+    lock_manager_acquire_special(GLOBAL_LOCK);
+
     page_id root_pid = storage_engine->btree->pid;
     lock_manager_acquire(root_pid);
 
     storage_engine->btree = btree_insert(storage_engine->btree, key, value);
 
     lock_manager_release(root_pid);
+
+    lock_manager_release_special(GLOBAL_LOCK);
 }
 
 void engine_delete(long key) {
+    lock_manager_acquire_special(GLOBAL_LOCK);
+
     page_id root_pid = storage_engine->btree->pid;
     lock_manager_acquire(root_pid);
 
     storage_engine->btree = btree_delete(storage_engine->btree, key);
 
     lock_manager_release(root_pid);
+
+    lock_manager_release_special(GLOBAL_LOCK);
 }
 
 long engine_get(long key) {
