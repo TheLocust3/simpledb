@@ -5,7 +5,7 @@ A dead simple database, built for learning purposes. Algorithms and inspiration 
 
 ## todo
 
-- Fix concurrency bugs
+- Actually get concurrency working
 - Better lock manager
   - Separate read and write locks (2 phase locking)
 - Better page manager

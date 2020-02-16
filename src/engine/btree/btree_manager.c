@@ -75,5 +75,5 @@ void btm_free(btree* bt) {
     log_debug_level(2, "[BTREE_MANAGER]: Freeing btree: %ld\n", pid);
 
     free(bt);
-    lock_manager_release(pid);
+    // lock_manager_release(pid);
 }

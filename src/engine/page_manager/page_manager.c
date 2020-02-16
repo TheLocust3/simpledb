@@ -12,7 +12,7 @@
 
 #include "page_manager.h"
 #include "../lock_manager/lock_manager.h"
-#include "linked_list.h"
+#include "../../common/linked_list.h"
 #include "../../log.h"
 
 static engine* storage_engine;
